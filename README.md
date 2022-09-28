@@ -7,4 +7,4 @@ ProblemDetails is a standard for providing errors from your HTTP API to consumin
 go get github.com/meysamhadeli/problem-details
 ```
 
-There are some samples for using this package [here](./sample/cmd).
+There are some samples for using this package [here](./sample/cmd/main.go).
