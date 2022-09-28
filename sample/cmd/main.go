@@ -2,7 +2,7 @@ package main
 
 import (
 	"github.com/labstack/echo/v4"
-	"github.com/meysamhadeli/problem"
+	"github.com/meysamhadeli/problem-details"
 	"github.com/pkg/errors"
 	"net/http"
 	"time"
