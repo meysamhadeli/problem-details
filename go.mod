@@ -1,4 +1,4 @@
-module github.com/meysamhadeli/problem
+module github.com/meysamhadeli/problem-details
 
 go 1.18
 
