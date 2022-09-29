@@ -9,7 +9,7 @@
   </div>
 </div>
 
-ProblemDetails create a standardized error payload to client, when we have a unhandle error. for implement this aproach we use [RFC 7807](https://datatracker.ietf.org/doc/html/rfc7807) to map our error to standard problem details response. it's a json or xml format that helps to defines a machine-readable details of errors in a http response to avoid the need to define new error response formats for http apis.
+ProblemDetails create a standardized error payload to client, when we have an unhandled error. For implement this approach, we use [RFC 7807 (https://datatracker.ietf.org/doc/html/rfc7807) standard to map our error to standard problem details response. It's a JSON or XML format that help us to defines machine-readable details of errors in an HTTP response to avoid the need to define new error response formats for HTTP APIs.
 
 ## Installation
 
