@@ -87,7 +87,7 @@ func sample2(c echo.Context) error {
 	return problem.NewError(http.StatusRequestTimeout, err)
 }
  ```
-### Handeling unhandel error:
+### Handeling unhandled error:
 
 If we return our error directly we handel our response with code [500](https://httpstatuses.io/500) base on [RFC 7807](https://datatracker.ietf.org/doc/html/rfc7807) standard. 
 
