@@ -9,7 +9,7 @@
   </div>
 </div>
 
-ProblemDetails is a standard for providing errors from your HTTP API to consuming clients.
+ProblemDetails create a standardized error payload to client, when we have a unhandle error. for implement this aproach we use [RFC 7807](https://datatracker.ietf.org/doc/html/rfc7807) to map our error to standard problem details response. it's a JSON or XML format that helps to defines a machine-readable details of errors in a HTTP response to avoid the need to define new error response formats for HTTP APIs.
 
 ## Installation
 
