@@ -1,5 +1,6 @@
 <div align="center" style="margin-bottom:20px">
   <img src="assets/problem-details.png" alt="problem-details" />
+  <h1>ProblemDetails</h1>
   <div align="center">
     <a href="https://github.com/meysamhadeli/problem-details/actions/workflows/ci.yml"><img alt="build-status" src="https://github.com/meysamhadeli/problem-details/actions/workflows/ci.yml/badge.svg?branch=main&style=flat-square"/></a>
     <a><img alt="license" src="https://img.shields.io/badge/go%20version-%3E=1.18-61CFDD.svg?style=flat-square"/></a>
@@ -8,7 +9,6 @@
   </div>
 </div>
 
-# problem-details
 ProblemDetails is a standard for providing errors from your HTTP API to consuming clients.
 
 ## Installation
