@@ -65,7 +65,7 @@ func ProblemDetailsHandler(error error, c echo.Context) {
 
 ### Built-in function:
 
-For return desired response we can use some built in `handy problem details function` for return our error base on [RFC 7807](https://datatracker.ietf.org/doc/html/rfc7807) standard.
+For return desired response we can use some built in `handy problem details function` like `BadRequestErr`,... for return our error base on [RFC 7807](https://datatracker.ietf.org/doc/html/rfc7807) standard.
 
 ```go
 // sample with built in problem details function error
@@ -88,6 +88,7 @@ func sample2(c echo.Context) error {
 }
  ```
 ### Handeling unhandel error:
+
 If we return our error directly we handel our response with code [500](https://httpstatuses.io/500) base on [RFC 7807](https://datatracker.ietf.org/doc/html/rfc7807) standard. 
 
 ```go
