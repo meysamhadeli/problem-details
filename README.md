@@ -38,8 +38,8 @@ There are some samples for using this package on top of Echo [here](./sample/cmd
 go get github.com/meysamhadeli/problem-details
 ```
 
-#### Creating EchoErrorHandler
-For handling our error we need to specify an `error handler` on top of `Echo` framework:
+### Creating EchoErrorHandler
+For handling our error we need to specify an `Error Handler` on top of `Echo` framework:
 ```go
 // EchoErrorHandler middleware for handle problem details error on echo
 func EchoErrorHandler(error error, c echo.Context) {
@@ -87,8 +87,8 @@ func sample2(c echo.Context) error {
 }
 ```
 
-#### Creating GinErrorHandler
-For handling our error we need to specify an `error handler` on top of `Gin` framework:
+### Creating GinErrorHandler
+For handling our error we need to specify an `Error Handler` on top of `Gin` framework:
 ```go
 // GinErrorHandler middleware for handle problem details error on gin
 func GinErrorHandler() gin.HandlerFunc {
