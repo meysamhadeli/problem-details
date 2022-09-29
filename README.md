@@ -77,7 +77,7 @@ func sample1(c echo.Context) error {
  ```
 ### Handeling unhandled error for echo:
 
-If we don't have specific status code by default our status code is `500` and we can write a `config option` for problem details in our `ErrorHandler` and override a new staus code and additinal info for our error.
+If we don't have specific status code by default our status code is `500` and we can write a `config option` for problem details in our `ErrorHandler` and override a new staus code and additinal info for our error. (We configured http.StatusInternalServerError change to http.StatusBadRequest base on example in our error handler)
 
 ```go
 // sample with handling unhanded error to customize return status code with problem details
@@ -130,7 +130,7 @@ func sample1(c *gin.Context) {
  ```
 ### Handeling unhandled error for gin:
 
-If we don't have specific status code by default our status code is `500` and we can write a `config option` for problem details in our `ErrorHandler` and override a new staus code and additinal info for our error.
+If we don't have specific status code by default our status code is `500` and we can write a `config option` for problem details in our `ErrorHandler` and override a new staus code and additinal info for our error. (We configured http.StatusInternalServerError change to http.StatusBadRequest base on example in our error handler)
 
 ```go
 // sample with handling unhandled error to customize return status code with problem details
