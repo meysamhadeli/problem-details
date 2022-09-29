@@ -6,7 +6,7 @@
     <a><img alt="license" src="https://img.shields.io/badge/go%20version-%3E=1.18-61CFDD.svg?style=flat-square"/></a>
     <a href="https://github.com/meysamhadeli/problem-details/blob/main/LICENSE"><img alt="build-status" src="https://img.shields.io/github/license/meysamhadeli/problem-details?color=%234275f5&style=flat-square"/></a>
     <a href="https://pkg.go.dev/github.com/meysamhadeli/problem-details"><img alt="build-status" src="https://pkg.go.dev/badge/github.com/meysamhadeli/problem-details"/></a>
-        <a href="https://coveralls.io/github/meysamhadeli/problem-details?branch=main"><img alt="Coverage Status" src="https://img.shields.io/coveralls/github/meysamhadeli/problem-details?color=%23f542cb&style=flat-square"/></a>
+
   </div>
 </div>
 
