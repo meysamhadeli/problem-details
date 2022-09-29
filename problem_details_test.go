@@ -1,61 +1,11 @@
 package problem
 
 import (
-	"github.com/pkg/errors"
 	"github.com/stretchr/testify/assert"
 	"net/http"
 	"testing"
 	"time"
 )
-
-func Test_BadRequestErr(t *testing.T) {
-	badRequestErr := BadRequestErr(errors.New("We have a bad request error"))
-
-	assert.Equal(t, http.StatusBadRequest, badRequestErr.Code)
-	assert.Equal(t, "We have a bad request error", badRequestErr.Details.Error())
-}
-
-func Test_InternalServerErr(t *testing.T) {
-	internalServerErr := InternalServerErr(errors.New("We have a internal server error"))
-
-	assert.Equal(t, http.StatusInternalServerError, internalServerErr.Code)
-	assert.Equal(t, "We have a internal server error", internalServerErr.Details.Error())
-}
-
-func Test_NotFoundErr(t *testing.T) {
-	notFoundErr := NotFoundErr(errors.New("We have a not found error"))
-
-	assert.Equal(t, http.StatusNotFound, notFoundErr.Code)
-	assert.Equal(t, "We have a not found error", notFoundErr.Details.Error())
-}
-
-func Test_UnauthorizedErr(t *testing.T) {
-	unauthorizedErr := UnauthorizedErr(errors.New("We have a unauthorized error"))
-
-	assert.Equal(t, http.StatusUnauthorized, unauthorizedErr.Code)
-	assert.Equal(t, "We have a unauthorized error", unauthorizedErr.Details.Error())
-}
-
-func Test_ForbiddenErr(t *testing.T) {
-	forbiddenErr := ForbiddenErr(errors.New("We have a forbidden error"))
-
-	assert.Equal(t, http.StatusForbidden, forbiddenErr.Code)
-	assert.Equal(t, "We have a forbidden error", forbiddenErr.Details.Error())
-}
-
-func Test_UnsupportedMediaTypeErr(t *testing.T) {
-	unsupportedMediaTypeErr := UnsupportedMediaTypeErr(errors.New("We have a unsupported media type error"))
-
-	assert.Equal(t, http.StatusUnsupportedMediaType, unsupportedMediaTypeErr.Code)
-	assert.Equal(t, "We have a unsupported media type error", unsupportedMediaTypeErr.Details.Error())
-}
-
-func Test_BadGatewayErr(t *testing.T) {
-	badGatewayErr := BadGatewayErr(errors.New("We have a bad gateway error"))
-
-	assert.Equal(t, http.StatusBadGateway, badGatewayErr.Code)
-	assert.Equal(t, "We have a bad gateway error", badGatewayErr.Details.Error())
-}
 
 func Test_Map_BadRequestErr(t *testing.T) {
 

@@ -3,6 +3,8 @@ package problem
 import (
 	"encoding/json"
 	"fmt"
+	"github.com/gin-gonic/gin"
+	"github.com/labstack/echo/v4"
 	"github.com/pkg/errors"
 	"net/http"
 	"time"
@@ -16,12 +18,6 @@ type ProblemDetail struct {
 	Type       string    `json:"type,omitempty"`
 	Timestamp  time.Time `json:"timestamp,omitempty"`
 	StackTrace string    `json:"stackTrace,omitempty"`
-}
-
-// ProblemDetailError represents an error in problem details
-type problemDetailError struct {
-	Code    int   `json:"-"`
-	Details error `json:"-"`
 }
 
 var mappers = map[int]func() *ProblemDetail{}
@@ -40,14 +36,24 @@ func Map(statusCode int, funcProblem func() *ProblemDetail) {
 // ResolveProblemDetails retrieve and resolve error with format problem details error
 func ResolveProblemDetails(w http.ResponseWriter, err error) (int, error) {
 
-	var statusCode int
+	var statusCode int = http.StatusInternalServerError
+	var details string
 
-	var pe *problemDetailError
+	var echoError *echo.HTTPError
 
-	if errors.As(err, &pe) == false {
-		statusCode = http.StatusInternalServerError
-	} else {
-		statusCode = err.(*problemDetailError).Code
+	var ginError *gin.Error
+
+	if errors.As(err, &echoError) {
+		if err.(*echo.HTTPError).Code != http.StatusOK {
+			statusCode = err.(*echo.HTTPError).Code
+		}
+		details = err.(*echo.HTTPError).Message.(error).Error()
+	} else if errors.As(err, &ginError) {
+		var rw = w.(gin.ResponseWriter)
+		if rw.Status() != http.StatusOK {
+			statusCode = rw.Status()
+		}
+		details = err.(*gin.Error).Error()
 	}
 
 	problem := mappers[statusCode]
@@ -55,7 +61,7 @@ func ResolveProblemDetails(w http.ResponseWriter, err error) (int, error) {
 	if problem != nil {
 		problem := problem()
 
-		validationProblems(problem, err, statusCode)
+		validationProblems(problem, details, statusCode)
 
 		val, err := problem.writeTo(w)
 
@@ -66,11 +72,15 @@ func ResolveProblemDetails(w http.ResponseWriter, err error) (int, error) {
 		return val, err
 	}
 
+	if details == "" {
+		details = err.Error()
+	}
+
 	defaultProblem := func() *ProblemDetail {
 		return &ProblemDetail{
 			Type:      getDefaultType(statusCode),
 			Status:    statusCode,
-			Detail:    err.Error(),
+			Detail:    details,
 			Timestamp: time.Now(),
 			Title:     http.StatusText(statusCode),
 		}
@@ -85,56 +95,7 @@ func ResolveProblemDetails(w http.ResponseWriter, err error) (int, error) {
 	return val, nil
 }
 
-// Error makes error compatible with `error` interface.
-func (p *problemDetailError) Error() string {
-	if p.Details == nil {
-		return fmt.Sprintf("code=%d", p.Code)
-	}
-	return p.Details.Error()
-}
-
-// NewError make custom error compatible with `error` interface.
-func NewError(code int, error error) *problemDetailError {
-	newError := &problemDetailError{Code: code, Details: error}
-	return newError
-}
-
-// BadRequestErr make badRequest error compatible with `error` interface.
-func BadRequestErr(error error) *problemDetailError {
-	return NewError(http.StatusBadRequest, error)
-}
-
-// InternalServerErr make internalServer error compatible with `error` interface.
-func InternalServerErr(error error) *problemDetailError {
-	return NewError(http.StatusInternalServerError, error)
-}
-
-// NotFoundErr make notFound error compatible with `error` interface.
-func NotFoundErr(error error) *problemDetailError {
-	return NewError(http.StatusNotFound, error)
-}
-
-// UnauthorizedErr make unauthorized error compatible with `error` interface.
-func UnauthorizedErr(error error) *problemDetailError {
-	return NewError(http.StatusUnauthorized, error)
-}
-
-// ForbiddenErr make forbidden error compatible with `error` interface.
-func ForbiddenErr(error error) *problemDetailError {
-	return NewError(http.StatusForbidden, error)
-}
-
-// UnsupportedMediaTypeErr make unsupportedMediaType error compatible with `error` interface.
-func UnsupportedMediaTypeErr(error error) *problemDetailError {
-	return NewError(http.StatusUnsupportedMediaType, error)
-}
-
-// BadGatewayErr make badGateway error compatible with `error` interface.
-func BadGatewayErr(error error) *problemDetailError {
-	return NewError(http.StatusBadGateway, error)
-}
-
-func validationProblems(problem *ProblemDetail, err error, statusCode int) {
+func validationProblems(problem *ProblemDetail, details string, statusCode int) {
 
 	if problem.Status == 0 {
 		problem.Status = statusCode
@@ -143,7 +104,7 @@ func validationProblems(problem *ProblemDetail, err error, statusCode int) {
 		problem.Timestamp = time.Now()
 	}
 	if problem.Detail == "" {
-		problem.Detail = err.Error()
+		problem.Detail = details
 	}
 	if problem.Type == "" {
 		problem.Type = getDefaultType(problem.Status)
