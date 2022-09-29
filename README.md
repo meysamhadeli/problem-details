@@ -39,7 +39,7 @@ go get github.com/meysamhadeli/problem-details
 ```
 
 #### Creating ProblemDetails Handler
-For handeling our error we need to specify a `error handler` on top of Echo, Gin or other framwork:
+For handling our error we need to specify an `error handler` on top of Echo, Gin or other framework:
 ```go
 // ProblemDetailsHandler middleware for handle problem details error on top of echo or gin or ...
 func ProblemDetailsHandler(error error, c echo.Context) {
@@ -90,7 +90,7 @@ func sample2(c echo.Context) error {
  ```
 ### Handeling unhandled error:
 
-If we return our error directly we handel our response with code [500](https://httpstatuses.io/500) base on [RFC 7807](https://datatracker.ietf.org/doc/html/rfc7807) standard. 
+If we return our error directly, we handle our response with code [500](https://httpstatuses.io/500) base on [RFC 7807](https://datatracker.ietf.org/doc/html/rfc7807) standard. 
 
 ```go
 // sample with unhandled server error with problem details
