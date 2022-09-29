@@ -30,7 +30,7 @@ Our problem details response body and headers will be look like this:
  content-type: application/problem+json
  date: Thu,29 Sep 2022 14:07:23 GMT 
 ```
-There are some samples for using this package [here](./sample/cmd/main.go).
+There are some samples for using this package on top of Echo [here](./sample/cmd/echo/main.go) and for Gin [here](./sample/cmd/gin/main.go).
 
 ## Installation
 
@@ -38,68 +38,108 @@ There are some samples for using this package [here](./sample/cmd/main.go).
 go get github.com/meysamhadeli/problem-details
 ```
 
-#### Creating ProblemDetails Handler
-For handling our error we need to specify an `error handler` on top of Echo, Gin or other framework:
+#### Creating EchoErrorHandler
+For handling our error we need to specify an `error handler` on top of `Echo` framework:
 ```go
-// ProblemDetailsHandler middleware for handle problem details error on top of echo or gin or ...
-func ProblemDetailsHandler(error error, c echo.Context) {
-	
-	// handle problem details with customize problem map error (optional)
-	problem.Map(http.StatusRequestTimeout, func() *problem.ProblemDetail {
+// EchoErrorHandler middleware for handle problem details error on echo
+func EchoErrorHandler(error error, c echo.Context) {
+
+	// handle problem details with customize problem map error
+	problem.Map(http.StatusInternalServerError, func() *problem.ProblemDetail {
 		return &problem.ProblemDetail{
-			Type:      "https://httpstatuses.io/408",
-			Status:    http.StatusRequestTimeout,
+			Type:      "https://httpstatuses.io/400",
 			Detail:    error.Error(),
-			Title:     "request-timeout",
+			Status:    http.StatusBadRequest,
+			Title:     "bad-request",
 			Timestamp: time.Now(),
 		}
 	})
 
-	// resolve problem details error from response in Echo or Gin or ...
+	// resolve problem details error from response in echo
 	if !c.Response().Committed {
 		if _, err := problem.ResolveProblemDetails(c.Response(), error); err != nil {
-			c.Logger().Error(err)
+			log.Error(err)
 		}
 	}
 }
 ```
 
-### Built-in function:
+### Creaeting specific status code error for echo:
 
-For return desired response we can use some built in `handy problem details function` like `BadRequestErr`,... for return our error base on [RFC 7807](https://datatracker.ietf.org/doc/html/rfc7807) standard.
-
-```go
-// sample with built in problem details function error
-func sample1(c echo.Context) error {
-
-	err := errors.New("We have a bad request in our endpoint")
-	return problem.BadRequestErr(err)
-}
-```
-### Creaeting custom error:
-
-For return desired response we more flexibility response we can use function `NewError` for return our error and code base on [RFC 7807](https://datatracker.ietf.org/doc/html/rfc7807) standard.
+In this sample we get error response with specific code.
  
  ```go
- // sample with create custom problem details error
-func sample2(c echo.Context) error {
-
-	err := errors.New("We have a request timeout in our endpoint")
-	return problem.NewError(http.StatusRequestTimeout, err)
+// sample with return specific status code
+func sample1(c echo.Context) error {
+	err := errors.New("We have a unauthorized error in our endpoint")
+	return echo.NewHTTPError(http.StatusUnauthorized, err)
 }
  ```
-### Handeling unhandled error:
+### Handeling unhandled error for echo:
 
-If we return our error directly, we handle our response with code [500](https://httpstatuses.io/500) base on [RFC 7807](https://datatracker.ietf.org/doc/html/rfc7807) standard. 
+If we don't have specific status code by default our status code is `500` and we can write a `config option` for problem details in our `ErrorHandler` and override a new staus code and additinal info for our error.
 
 ```go
-// sample with unhandled server error with problem details
-func sample3(c echo.Context) error {
-
-	err := errors.New("We have a unhandled server error in our endpoint")
+// sample with handling unhanded error to customize return status code with problem details
+func sample2(c echo.Context) error {
+	err := errors.New("We have a custom error in our endpoint")
 	return err
 }
 ```
+
+#### Creating GinErrorHandler
+For handling our error we need to specify an `error handler` on top of `Gin` framework:
+```go
+// GinErrorHandler middleware for handle problem details error on gin
+func GinErrorHandler() gin.HandlerFunc {
+	return func(c *gin.Context) {
+
+		c.Next()
+
+		for _, err := range c.Errors {
+
+			// handle problem details with customize problem map error
+			problem.Map(http.StatusInternalServerError, func() *problem.ProblemDetail {
+				return &problem.ProblemDetail{
+					Type:      "https://httpstatuses.io/400",
+					Detail:    err.Error(),
+					Status:    http.StatusBadRequest,
+					Title:     "bad-request",
+					Timestamp: time.Now(),
+				}
+			})
+
+			if _, err := problem.ResolveProblemDetails(c.Writer, err); err != nil {
+				log.Error(err)
+			}
+		}
+	}
+}
+```
+
+### Creaeting specific status code error for gin:
+
+In this sample we get error response with specific code.
+ 
+ ```go
+// sample with return specific status code
+func sample1(c *gin.Context) {
+	err := errors.New("We have a unauthorized error in our endpoint")
+	_ = c.AbortWithError(http.StatusUnauthorized, err)
+}
+ ```
+### Handeling unhandled error for gin:
+
+If we don't have specific status code by default our status code is `500` and we can write a `config option` for problem details in our `ErrorHandler` and override a new staus code and additinal info for our error.
+
+```go
+// sample with handling unhandled error to customize return status code with problem details
+func sample2(c *gin.Context) {
+	err := errors.New("We have a custom error in our endpoint")
+	_ = c.Error(err)
+}
+```
+
 
 # Support
 
