@@ -37,7 +37,6 @@ func Map(statusCode int, funcProblem func() *ProblemDetail) {
 func ResolveProblemDetails(w http.ResponseWriter, err error) (int, error) {
 
 	var statusCode int = http.StatusInternalServerError
-	var details string
 
 	var echoError *echo.HTTPError
 
@@ -47,13 +46,13 @@ func ResolveProblemDetails(w http.ResponseWriter, err error) (int, error) {
 		if err.(*echo.HTTPError).Code != http.StatusOK {
 			statusCode = err.(*echo.HTTPError).Code
 		}
-		details = err.(*echo.HTTPError).Message.(error).Error()
+		err = err.(*echo.HTTPError).Message.(error)
 	} else if errors.As(err, &ginError) {
 		var rw = w.(gin.ResponseWriter)
 		if rw.Status() != http.StatusOK {
 			statusCode = rw.Status()
 		}
-		details = err.(*gin.Error).Error()
+		err = err.(*gin.Error)
 	}
 
 	problem := mappers[statusCode]
@@ -61,7 +60,7 @@ func ResolveProblemDetails(w http.ResponseWriter, err error) (int, error) {
 	if problem != nil {
 		problem := problem()
 
-		validationProblems(problem, details, statusCode)
+		validationProblems(problem, err, statusCode)
 
 		val, err := problem.writeTo(w)
 
@@ -72,15 +71,11 @@ func ResolveProblemDetails(w http.ResponseWriter, err error) (int, error) {
 		return val, err
 	}
 
-	if details == "" {
-		details = err.Error()
-	}
-
 	defaultProblem := func() *ProblemDetail {
 		return &ProblemDetail{
 			Type:      getDefaultType(statusCode),
 			Status:    statusCode,
-			Detail:    details,
+			Detail:    err.Error(),
 			Timestamp: time.Now(),
 			Title:     http.StatusText(statusCode),
 		}
@@ -95,16 +90,14 @@ func ResolveProblemDetails(w http.ResponseWriter, err error) (int, error) {
 	return val, nil
 }
 
-func validationProblems(problem *ProblemDetail, details string, statusCode int) {
+func validationProblems(problem *ProblemDetail, err error, statusCode int) {
+	problem.Detail = err.Error()
 
 	if problem.Status == 0 {
 		problem.Status = statusCode
 	}
 	if problem.Timestamp.IsZero() {
 		problem.Timestamp = time.Now()
-	}
-	if problem.Detail == "" {
-		problem.Detail = details
 	}
 	if problem.Type == "" {
 		problem.Type = getDefaultType(problem.Status)
