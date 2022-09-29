@@ -26,7 +26,7 @@ func sample1(c echo.Context) error {
 	return echo.NewHTTPError(http.StatusUnauthorized, err)
 }
 
-// sample with handling unhanded error to customize return status code with problem details
+// sample with handling unhandled error to customize return status code with problem details
 func sample2(c echo.Context) error {
 	err := errors.New("We have a custom error in our endpoint")
 	return err
@@ -46,7 +46,7 @@ func EchoErrorHandler(error error, c echo.Context) {
 		}
 	})
 
-	// resolve problem details error from response in echo or gin or ...
+	// resolve problem details error from response in echo
 	if !c.Response().Committed {
 		if _, err := problem.ResolveProblemDetails(c.Response(), error); err != nil {
 			log.Error(err)

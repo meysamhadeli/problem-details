@@ -27,7 +27,7 @@ func sample1(c *gin.Context) {
 	_ = c.AbortWithError(http.StatusUnauthorized, err)
 }
 
-// sample with handling unhanded error to customize return status code with problem details
+// sample with handling unhandled error to customize return status code with problem details
 func sample2(c *gin.Context) {
 	err := errors.New("We have a custom error in our endpoint")
 	_ = c.Error(err)
@@ -41,7 +41,7 @@ func GinErrorHandler() gin.HandlerFunc {
 
 		for _, err := range c.Errors {
 
-			// handle problem details with customize problem map error (optional)
+			// handle problem details with customize problem map error
 			problem.Map(http.StatusInternalServerError, func() *problem.ProblemDetail {
 				return &problem.ProblemDetail{
 					Type:      "https://httpstatuses.io/400",
