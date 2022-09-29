@@ -33,6 +33,7 @@ Our problem details response body and headers will be look like this:
  content-type: application/problem+json
  date: Thu,29 Sep 2022 14:07:23 GMT 
 ```
+There are some samples for using this package [here](./sample/cmd/main.go).
 
 ## Installation
 
@@ -40,4 +41,64 @@ Our problem details response body and headers will be look like this:
 go get github.com/meysamhadeli/problem-details
 ```
 
-There are some samples for using this package [here](./sample/cmd/main.go).
+#### Creating ProblemDetails Handler
+For handeling our error we need to specify a `error handler` on top of Echo, Gin or other framwork:
+```go
+// ProblemDetailsHandler middleware for handle problem details error on top of echo or gin or ...
+func ProblemDetailsHandler(error error, c echo.Context) {
+	
+	// handle problem details with customize problem map error (optional)
+	problem.Map(http.StatusRequestTimeout, func() *problem.ProblemDetail {
+		return &problem.ProblemDetail{
+			Type:      "https://httpstatuses.io/408",
+			Status:    http.StatusRequestTimeout,
+			Detail:    error.Error(),
+			Title:     "request-timeout",
+			Timestamp: time.Now(),
+		}
+	})
+
+	// resolve problem details error from response in Echo or Gin or ...
+	if !c.Response().Committed {
+		if _, err := problem.ResolveProblemDetails(c.Response(), error); err != nil {
+			c.Logger().Error(err)
+		}
+	}
+}
+```
+
+### Built-in function:
+
+For return desired response we can use some built in `handy problem details function` for return our error base on [RFC 7807](https://datatracker.ietf.org/doc/html/rfc7807) standard.
+
+```go
+// sample with built in problem details function error
+func sample1(c echo.Context) error {
+
+	err := errors.New("We have a bad request in our endpoint")
+	return problem.BadRequestErr(err)
+}
+```
+### Creaeting custom error:
+
+For return desired response we more flexibility response we can use function `NewError` for return our error and code base on [RFC 7807](https://datatracker.ietf.org/doc/html/rfc7807) standard.
+ 
+ ```go
+ // sample with create custom problem details error
+func sample2(c echo.Context) error {
+
+	err := errors.New("We have a request timeout in our endpoint")
+	return problem.NewError(http.StatusRequestTimeout, err)
+}
+ ```
+### Handeling unhandel error:
+If we return our error directly we handel our response with code [500](https://httpstatuses.io/500) base on [RFC 7807](https://datatracker.ietf.org/doc/html/rfc7807) standard. 
+
+```go
+// sample with unhandled server error with problem details
+func sample3(c echo.Context) error {
+
+	err := errors.New("We have a unhandled server error in our endpoint")
+	return err
+}
+```
