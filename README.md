@@ -64,7 +64,7 @@ func EchoErrorHandler(error error, c echo.Context) {
 }
 ```
 
-### Creaeting specific status code error for echo:
+### Creaeting specific status code error for Echo:
 
 In this sample we get error response with specific code.
  
@@ -75,7 +75,7 @@ func sample1(c echo.Context) error {
 	return echo.NewHTTPError(http.StatusUnauthorized, err)
 }
  ```
-### Handeling unhandled error for echo:
+### Handeling unhandled error for Echo:
 
 If we don't have specific status code by default our status code is `500` and we can write a `config option` for problem details in our `ErrorHandler` and override a new staus code and additinal info for our error. (We configured http.StatusInternalServerError change to http.StatusBadRequest base on example in our error handler)
 
@@ -117,7 +117,7 @@ func GinErrorHandler() gin.HandlerFunc {
 }
 ```
 
-### Creaeting specific status code error for gin:
+### Creaeting specific status code error for Gin:
 
 In this sample we get error response with specific code.
  
@@ -128,7 +128,7 @@ func sample1(c *gin.Context) {
 	_ = c.AbortWithError(http.StatusUnauthorized, err)
 }
  ```
-### Handeling unhandled error for gin:
+### Handeling unhandled error for Gin:
 
 If we don't have specific status code by default our status code is `500` and we can write a `config option` for problem details in our `ErrorHandler` and override a new staus code and additinal info for our error. (We configured http.StatusInternalServerError change to http.StatusBadRequest base on example in our error handler)
 
