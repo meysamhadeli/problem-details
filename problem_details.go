@@ -43,13 +43,11 @@ func ResolveProblemDetails(w http.ResponseWriter, err error) (int, error) {
 	var ginError *gin.Error
 
 	if errors.As(err, &echoError) {
-		if err.(*echo.HTTPError).Code != http.StatusOK {
-			statusCode = err.(*echo.HTTPError).Code
-		}
+		statusCode = err.(*echo.HTTPError).Code
 		err = err.(*echo.HTTPError).Message.(error)
 	} else if errors.As(err, &ginError) {
 		var rw = w.(gin.ResponseWriter)
-		if rw.Status() != http.StatusOK {
+		if rw.Written() {
 			statusCode = rw.Status()
 		}
 		err = err.(*gin.Error)
