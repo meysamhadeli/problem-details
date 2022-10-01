@@ -37,7 +37,11 @@ There are some samples for using this package on top of Echo [here](./sample/cmd
 go get github.com/meysamhadeli/problem-details
 ```
 
-### Creating EchoErrorHandler
+## Web-Frameworks
+
+### Echo
+
+#### Creating ErrorHandler
 For handling our error we need to specify an `Error Handler` on top of `Echo` framework:
 ```go
 // EchoErrorHandler middleware for handle problem details error on echo
@@ -63,7 +67,7 @@ func EchoErrorHandler(error error, c echo.Context) {
 }
 ```
 
-### Creaeting specific status code error for Echo:
+#### Creaeting specific status code error:
 
 In this sample we get error response with specific code.
  
@@ -74,7 +78,7 @@ func sample1(c echo.Context) error {
 	return echo.NewHTTPError(http.StatusUnauthorized, err)
 }
  ```
-### Handeling unhandled error for Echo:
+#### Handeling unhandled error:
 
 If we don't have specific status code by default our status code is `500` and we can write a `config option` for problem details in our `Error Handler` and override a new staus code and additinal info for our error. (We configured http.StatusInternalServerError change to http.StatusBadRequest base on example in our error handler)
 
@@ -85,8 +89,8 @@ func sample2(c echo.Context) error {
 	return err
 }
 ```
-
-### Creating GinErrorHandler
+### Gin
+#### Creating ErrorHandler
 For handling our error we need to specify an `Error Handler` on top of `Gin` framework:
 ```go
 // GinErrorHandler middleware for handle problem details error on gin
@@ -116,7 +120,7 @@ func GinErrorHandler() gin.HandlerFunc {
 }
 ```
 
-### Creaeting specific status code error for Gin:
+#### Creaeting specific status code error:
 
 In this sample we get error response with specific code.
  
@@ -127,7 +131,7 @@ func sample1(c *gin.Context) {
 	_ = c.AbortWithError(http.StatusUnauthorized, err)
 }
  ```
-### Handeling unhandled error for Gin:
+#### Handeling unhandled error:
 
 If we don't have specific status code by default our status code is `500` and we can write a `config option` for problem details in our `Error Handler` and override a new staus code and additinal info for our error. (We configured http.StatusInternalServerError change to http.StatusBadRequest base on example in our error handler)
 
