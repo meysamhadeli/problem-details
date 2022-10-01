@@ -41,7 +41,7 @@ go get github.com/meysamhadeli/problem-details
 
 ### Echo
 
-#### ErrorHandler:
+#### Error Handler:
 For handling our error we need to specify an `Error Handler` on top of `Echo` framework:
 ```go
 // EchoErrorHandler middleware for handle problem details error on echo
@@ -90,7 +90,7 @@ func sample2(c echo.Context) error {
 }
 ```
 ### Gin
-#### ErrorHandler:
+#### Error Handler:
 For handling our error we need to specify an `Error Handler` on top of `Gin` framework:
 ```go
 // GinErrorHandler middleware for handle problem details error on gin
