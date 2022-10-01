@@ -10,7 +10,7 @@
 </div>
 
 
-> ProblemDetails is a `ErrorHandler` base on [RFC 7807](https://datatracker.ietf.org/doc/html/rfc7807) standard to map our error to standardized error payload to client. For implement this approach, we use It's a JSON or XML format, when formatted as a JSON document, it uses the `"application/problem+json"` media type and for XML format, it uses the `"application/problem+xml"` media type. This document help us to defines machine-readable details of errors in an HTTP response to avoid the need to define new error response formats for HTTP APIs.
+> ProblemDetails is a `Error Handler` base on [RFC 7807](https://datatracker.ietf.org/doc/html/rfc7807) standard to map our error to standardized error payload to client. For implement this approach, we use It's a JSON or XML format, when formatted as a JSON document, it uses the `"application/problem+json"` media type and for XML format, it uses the `"application/problem+xml"` media type. This document help us to defines machine-readable details of errors in an HTTP response to avoid the need to define new error response formats for HTTP APIs.
 
 Our problem details response body and headers will be look like this:
 ```go
@@ -76,7 +76,7 @@ func sample1(c echo.Context) error {
  ```
 ### Handeling unhandled error for Echo:
 
-If we don't have specific status code by default our status code is `500` and we can write a `config option` for problem details in our `ErrorHandler` and override a new staus code and additinal info for our error. (We configured http.StatusInternalServerError change to http.StatusBadRequest base on example in our error handler)
+If we don't have specific status code by default our status code is `500` and we can write a `config option` for problem details in our `Error Handler` and override a new staus code and additinal info for our error. (We configured http.StatusInternalServerError change to http.StatusBadRequest base on example in our error handler)
 
 ```go
 // sample with handling unhanded error to customize return status code with problem details
@@ -129,7 +129,7 @@ func sample1(c *gin.Context) {
  ```
 ### Handeling unhandled error for Gin:
 
-If we don't have specific status code by default our status code is `500` and we can write a `config option` for problem details in our `ErrorHandler` and override a new staus code and additinal info for our error. (We configured http.StatusInternalServerError change to http.StatusBadRequest base on example in our error handler)
+If we don't have specific status code by default our status code is `500` and we can write a `config option` for problem details in our `Error Handler` and override a new staus code and additinal info for our error. (We configured http.StatusInternalServerError change to http.StatusBadRequest base on example in our error handler)
 
 ```go
 // sample with handling unhandled error to customize return status code with problem details
