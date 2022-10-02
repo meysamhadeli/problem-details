@@ -34,7 +34,7 @@ func Map(statusCode int, funcProblem func() *ProblemDetail) {
 }
 
 // ResolveProblemDetails retrieve and resolve error with format problem details error
-func ResolveProblemDetails(w http.ResponseWriter, err error) (int, error) {
+func ResolveProblemDetails(w http.ResponseWriter, err error) error {
 
 	var statusCode int = http.StatusInternalServerError
 
@@ -60,13 +60,13 @@ func ResolveProblemDetails(w http.ResponseWriter, err error) (int, error) {
 
 		validationProblems(problem, err, statusCode)
 
-		val, err := problem.writeTo(w)
+		_, err = problem.writeTo(w)
 
 		if err != nil {
-			return 0, err
+			return err
 		}
 
-		return val, err
+		return err
 	}
 
 	defaultProblem := func() *ProblemDetail {
@@ -79,13 +79,13 @@ func ResolveProblemDetails(w http.ResponseWriter, err error) (int, error) {
 		}
 	}
 
-	val, err := defaultProblem().writeTo(w)
+	_, err = defaultProblem().writeTo(w)
 
 	if err != nil {
-		return 0, err
+		return err
 	}
 
-	return val, nil
+	return err
 }
 
 func validationProblems(problem *ProblemDetail, err error, statusCode int) {

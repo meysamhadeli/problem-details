@@ -52,7 +52,7 @@ func GinErrorHandler() gin.HandlerFunc {
 				}
 			})
 
-			if _, err := problem.ResolveProblemDetails(c.Writer, err); err != nil {
+			if err := problem.ResolveProblemDetails(c.Writer, err); err != nil {
 				log.Error(err)
 			}
 		}

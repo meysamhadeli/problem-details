@@ -48,7 +48,7 @@ func EchoErrorHandler(error error, c echo.Context) {
 
 	// resolve problem details error from response in echo
 	if !c.Response().Committed {
-		if _, err := problem.ResolveProblemDetails(c.Response(), error); err != nil {
+		if err := problem.ResolveProblemDetails(c.Response(), error); err != nil {
 			log.Error(err)
 		}
 	}
