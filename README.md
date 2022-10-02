@@ -10,7 +10,7 @@
 </div>
 
 
-> Problem Details create a standardized error payload to client. For implement this approach, we use [RFC 7807](https://datatracker.ietf.org/doc/html/rfc7807) standard to map our error to standard problem details response. It's a JSON or XML format, when formatted as a JSON document, it uses the `"application/problem+json"` media type and for XML format, it uses the "application/problem+xml" media type. This document help us to defines machine-readable details of errors in an HTTP response to avoid the need to define new error response formats for HTTP APIs.
+> ProblemDetails is a `Error Handler` base on [RFC 7807](https://datatracker.ietf.org/doc/html/rfc7807) standard to map our error to standardized error payload to client. For implement this approach, we use It's a JSON or XML format, when formatted as a JSON document, it uses the `"application/problem+json"` media type and for XML format, it uses the `"application/problem+xml"` media type. This document help us to defines machine-readable details of errors in an HTTP response to avoid the need to define new error response formats for HTTP APIs.
 
 Our problem details response body and headers will be look like this:
 ```go
@@ -37,7 +37,11 @@ There are some samples for using this package on top of Echo [here](./sample/cmd
 go get github.com/meysamhadeli/problem-details
 ```
 
-### Creating EchoErrorHandler
+## Web-Frameworks
+
+### Echo
+
+#### Error Handler:
 For handling our error we need to specify an `Error Handler` on top of `Echo` framework:
 ```go
 // EchoErrorHandler middleware for handle problem details error on echo
@@ -63,7 +67,7 @@ func EchoErrorHandler(error error, c echo.Context) {
 }
 ```
 
-### Creaeting specific status code error for Echo:
+#### Creaeting specific status code error:
 
 In this sample we get error response with specific code.
  
@@ -74,9 +78,9 @@ func sample1(c echo.Context) error {
 	return echo.NewHTTPError(http.StatusUnauthorized, err)
 }
  ```
-### Handeling unhandled error for Echo:
+#### Handeling unhandled error:
 
-If we don't have specific status code by default our status code is `500` and we can write a `config option` for problem details in our `ErrorHandler` and override a new staus code and additinal info for our error. (We configured http.StatusInternalServerError change to http.StatusBadRequest base on example in our error handler)
+If we don't have specific status code by default our status code is `500` and we can write a `config option` for problem details in our `Error Handler` and override a new staus code and additinal info for our error. (We configured http.StatusInternalServerError change to http.StatusBadRequest base on example in our error handler)
 
 ```go
 // sample with handling unhanded error to customize return status code with problem details
@@ -85,8 +89,8 @@ func sample2(c echo.Context) error {
 	return err
 }
 ```
-
-### Creating GinErrorHandler
+### Gin
+#### Error Handler:
 For handling our error we need to specify an `Error Handler` on top of `Gin` framework:
 ```go
 // GinErrorHandler middleware for handle problem details error on gin
@@ -116,7 +120,7 @@ func GinErrorHandler() gin.HandlerFunc {
 }
 ```
 
-### Creaeting specific status code error for Gin:
+#### Creaeting specific status code error:
 
 In this sample we get error response with specific code.
  
@@ -127,9 +131,9 @@ func sample1(c *gin.Context) {
 	_ = c.AbortWithError(http.StatusUnauthorized, err)
 }
  ```
-### Handeling unhandled error for Gin:
+#### Handeling unhandled error:
 
-If we don't have specific status code by default our status code is `500` and we can write a `config option` for problem details in our `ErrorHandler` and override a new staus code and additinal info for our error. (We configured http.StatusInternalServerError change to http.StatusBadRequest base on example in our error handler)
+If we don't have specific status code by default our status code is `500` and we can write a `config option` for problem details in our `Error Handler` and override a new staus code and additinal info for our error. (We configured http.StatusInternalServerError change to http.StatusBadRequest base on example in our error handler)
 
 ```go
 // sample with handling unhandled error to customize return status code with problem details
