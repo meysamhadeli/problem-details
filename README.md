@@ -20,7 +20,8 @@ Our problem details response body and headers will be look like this:
 "status": 400,                                        // The HTTP status code generated on the problem occurrence
 "title": "bad-request",                               // A short human-readable problem summary
 "detail": "We have a bad request in our endpoint",    // A human-readable explanation for what exactly happened
-"type": "https://httpstatuses.io/400"                 // URI reference to identify the problem type
+"type": "https://httpstatuses.io/400",                // URI reference to identify the problem type
+"instance": "/sample1"                                // URI reference of the occurrence
 }
 ```
 ```go
@@ -54,13 +55,12 @@ func EchoErrorHandler(error error, c echo.Context) {
 			Detail:    error.Error(),
 			Status:    http.StatusBadRequest,
 			Title:     "bad-request",
-			Timestamp: time.Now(),
 		}
 	})
 
 	// resolve problem details error from response in echo
 	if !c.Response().Committed {
-		if err := problem.ResolveProblemDetails(c.Response(), error); err != nil {
+		if err := problem.ResolveProblemDetails(c.Response(), c.Request(), error); err != nil {
 			log.Error(err)
 		}
 	}
@@ -108,11 +108,10 @@ func GinErrorHandler() gin.HandlerFunc {
 					Detail:    err.Error(),
 					Status:    http.StatusBadRequest,
 					Title:     "bad-request",
-					Timestamp: time.Now(),
 				}
 			})
 
-			if err := problem.ResolveProblemDetails(c.Writer, err); err != nil {
+			if err := problem.ResolveProblemDetails(c.Writer, c.Request, err); err != nil {
 				log.Error(err)
 			}
 		}

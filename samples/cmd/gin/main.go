@@ -6,7 +6,6 @@ import (
 	"github.com/meysamhadeli/problem-details"
 	"github.com/pkg/errors"
 	"net/http"
-	"time"
 )
 
 func main() {
@@ -44,15 +43,14 @@ func GinErrorHandler() gin.HandlerFunc {
 			// handle problem details with customize problem map error
 			problem.Map(http.StatusInternalServerError, func() *problem.ProblemDetail {
 				return &problem.ProblemDetail{
-					Type:      "https://httpstatuses.io/400",
-					Detail:    err.Error(),
-					Status:    http.StatusBadRequest,
-					Title:     "bad-request",
-					Timestamp: time.Now(),
+					Type:   "https://httpstatuses.io/400",
+					Detail: err.Error(),
+					Status: http.StatusBadRequest,
+					Title:  "bad-request",
 				}
 			})
 
-			if err := problem.ResolveProblemDetails(c.Writer, err); err != nil {
+			if err := problem.ResolveProblemDetails(c.Writer, c.Request, err); err != nil {
 				log.Error(err)
 			}
 		}

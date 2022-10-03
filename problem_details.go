@@ -7,17 +7,16 @@ import (
 	"github.com/labstack/echo/v4"
 	"github.com/pkg/errors"
 	"net/http"
-	"time"
 )
 
 // ProblemDetail error struct
 type ProblemDetail struct {
-	Status     int       `json:"status,omitempty"`
-	Title      string    `json:"title,omitempty"`
-	Detail     string    `json:"detail,omitempty"`
-	Type       string    `json:"type,omitempty"`
-	Timestamp  time.Time `json:"timestamp,omitempty"`
-	StackTrace string    `json:"stackTrace,omitempty"`
+	Status     int    `json:"status,omitempty"`
+	Title      string `json:"title,omitempty"`
+	Detail     string `json:"detail,omitempty"`
+	Type       string `json:"type,omitempty"`
+	Instance   string `json:"instance,omitempty"`
+	StackTrace string `json:"stackTrace,omitempty"`
 }
 
 var mappers = map[int]func() *ProblemDetail{}
@@ -34,7 +33,7 @@ func Map(statusCode int, funcProblem func() *ProblemDetail) {
 }
 
 // ResolveProblemDetails retrieve and resolve error with format problem details error
-func ResolveProblemDetails(w http.ResponseWriter, err error) error {
+func ResolveProblemDetails(w http.ResponseWriter, r *http.Request, err error) error {
 
 	var statusCode int = http.StatusInternalServerError
 
@@ -58,7 +57,7 @@ func ResolveProblemDetails(w http.ResponseWriter, err error) error {
 	if problem != nil {
 		problem := problem()
 
-		validationProblems(problem, err, statusCode)
+		validationProblems(problem, err, statusCode, r)
 
 		_, err = problem.writeTo(w)
 
@@ -71,11 +70,11 @@ func ResolveProblemDetails(w http.ResponseWriter, err error) error {
 
 	defaultProblem := func() *ProblemDetail {
 		return &ProblemDetail{
-			Type:      getDefaultType(statusCode),
-			Status:    statusCode,
-			Detail:    err.Error(),
-			Timestamp: time.Now(),
-			Title:     http.StatusText(statusCode),
+			Type:     getDefaultType(statusCode),
+			Status:   statusCode,
+			Detail:   err.Error(),
+			Title:    http.StatusText(statusCode),
+			Instance: r.URL.RequestURI(),
 		}
 	}
 
@@ -88,14 +87,14 @@ func ResolveProblemDetails(w http.ResponseWriter, err error) error {
 	return err
 }
 
-func validationProblems(problem *ProblemDetail, err error, statusCode int) {
+func validationProblems(problem *ProblemDetail, err error, statusCode int, r *http.Request) {
 	problem.Detail = err.Error()
 
 	if problem.Status == 0 {
 		problem.Status = statusCode
 	}
-	if problem.Timestamp.IsZero() {
-		problem.Timestamp = time.Now()
+	if problem.Instance == "" {
+		problem.Instance = r.URL.RequestURI()
 	}
 	if problem.Type == "" {
 		problem.Type = getDefaultType(problem.Status)
@@ -118,4 +117,8 @@ func (p *ProblemDetail) json() []byte {
 
 func getDefaultType(statusCode int) string {
 	return fmt.Sprintf("https://httpstatuses.io/%d", statusCode)
+}
+
+func getUrl(w http.ResponseWriter, r *http.Request) {
+	fmt.Printf("Req: %s %s\n", r.Host, r.URL.Path)
 }

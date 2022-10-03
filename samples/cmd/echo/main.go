@@ -1,12 +1,12 @@
 package main
 
 import (
+	"fmt"
 	"github.com/labstack/echo/v4"
 	"github.com/labstack/gommon/log"
 	"github.com/meysamhadeli/problem-details"
 	"github.com/pkg/errors"
 	"net/http"
-	"time"
 )
 
 func main() {
@@ -35,20 +35,22 @@ func sample2(c echo.Context) error {
 // EchoErrorHandler middleware for handle problem details error on echo
 func EchoErrorHandler(error error, c echo.Context) {
 
+	var b = c.Request().URL.RequestURI()
+	fmt.Println(b)
+
 	// handle problem details with customize problem map error
 	problem.Map(http.StatusInternalServerError, func() *problem.ProblemDetail {
 		return &problem.ProblemDetail{
-			Type:      "https://httpstatuses.io/400",
-			Detail:    error.Error(),
-			Status:    http.StatusBadRequest,
-			Title:     "bad-request",
-			Timestamp: time.Now(),
+			Type:   "https://httpstatuses.io/400",
+			Detail: error.Error(),
+			Status: http.StatusBadRequest,
+			Title:  "bad-request",
 		}
 	})
 
 	// resolve problem details error from response in echo
 	if !c.Response().Committed {
-		if err := problem.ResolveProblemDetails(c.Response(), error); err != nil {
+		if err := problem.ResolveProblemDetails(c.Response(), c.Request(), error); err != nil {
 			log.Error(err)
 		}
 	}
