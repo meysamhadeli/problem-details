@@ -59,28 +59,29 @@ func EchoErrorHandler(error error, c echo.Context) {
 }
 ```
 
-#### Creaeting specific status code error:
+#### Map Status Code:
 
-In this sample we get error response with specific code.
+In this sample we map status code 'StatusBadGateway' to 'StatusUnauthorized' base on handler config to problem details error.
  
  ```go
-// sample with return specific status code
+// handle specific status code to problem details error
 func sample1(c echo.Context) error {
-	err := errors.New("We have a unauthorized error in our endpoint")
-	return echo.NewHTTPError(http.StatusUnauthorized, err)
+	err := errors.New("We have a specific status code error in our endpoint")
+	return echo.NewHTTPError(http.StatusBadGateway, err)
 }
  ```
-#### Handeling unhandled error:
+#### Map Custom Type Error:
 
-If we don't have specific status code by default our status code is `500` and we can write a `config option` for problem details in our `Error Handler` and override a new staus code and additinal info for our error. (We configured http.StatusInternalServerError change to http.StatusBadRequest base on example in our error handler)
+In this sample we map custom error type to problem details error. 
 
 ```go
-// sample with handling unhanded error to customize return status code with problem details
+// handle custom type error to problem details error
 func sample2(c echo.Context) error {
-	err := errors.New("We have a custom error in our endpoint")
-	return err
+	err := errors.New("We have a custom type error in our endpoint")
+	return custom_errors.BadRequestError{InternalError: err}
 }
 ```
+
 ### Gin
 #### Error Handler:
 For handling our error we need to specify an `Error Handler` on top of `Gin` framework:
@@ -103,26 +104,28 @@ func GinErrorHandler() gin.HandlerFunc {
 }
 ```
 
-#### Creaeting specific status code error:
+#### Map Status Code:
 
-In this sample we get error response with specific code.
+In this sample we map status code 'StatusBadGateway' to 'StatusUnauthorized' base on handler config to problem details error.
  
  ```go
-// sample with return specific status code
+// handle specific status code to problem details error
 func sample1(c *gin.Context) {
-	err := errors.New("We have a unauthorized error in our endpoint")
-	_ = c.AbortWithError(http.StatusUnauthorized, err)
+	err := errors.New("We have a specific status code error in our endpoint")
+	_ = c.AbortWithError(http.StatusBadGateway, err)
 }
  ```
-#### Handeling unhandled error:
+#### Map Custom Type Error:
 
-If we don't have specific status code by default our status code is `500` and we can write a `config option` for problem details in our `Error Handler` and override a new staus code and additinal info for our error. (We configured http.StatusInternalServerError change to http.StatusBadRequest base on example in our error handler)
+In this sample we map custom error type to problem details error. 
 
 ```go
-// sample with handling unhandled error to customize return status code with problem details
+// handle custom type error to problem details error
 func sample2(c *gin.Context) {
-	err := errors.New("We have a custom error in our endpoint")
-	_ = c.Error(err)
+
+	err := errors.New("We have a custom type error in our endpoint")
+	customBadRequestError := custom_errors.BadRequestError{InternalError: err}
+	_ = c.Error(customBadRequestError)
 }
 ```
 
