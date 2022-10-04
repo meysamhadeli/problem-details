@@ -153,6 +153,27 @@ problem.Map[custom_errors.BadRequestError](func() problem.ProblemDetailErr {
 })
  ```
 
+#### Custom Problem Details:
+
+We support custom problem setails error for create more flexibility response error:
+```go
+// custom problem details
+type CustomProblemDetail struct {
+	problem.ProblemDetailErr
+	Description    string `json:"description,omitempty"`
+	AdditionalInfo string `json:"additionalInfo,omitempty"`
+}
+```
+ ```go
+// problem details handler config
+problem.Map[custom_errors.ConflictError](func() problem.ProblemDetailErr {
+	return &custom_problems.CustomProblemDetail{
+		ProblemDetailErr: problem.New(http.StatusConflict, "conflict", error.Error()),
+		AdditionalInfo:   "some additional info...",
+		Description:      "some description...",
+	}
+})
+ ```
 
 # Support
 
