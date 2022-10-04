@@ -40,7 +40,7 @@ go get github.com/meysamhadeli/problem-details
 
 ## Web-Frameworks
 
-### Echo
+> ### Echo
 
 #### Error Handler:
 For handling our error we need to specify an `Error Handler` on top of `Echo` framework:
@@ -59,7 +59,7 @@ func EchoErrorHandler(error error, c echo.Context) {
 }
 ```
 
-#### Map Status Code:
+#### Map Status Code Error:
 
 In this sample we map status code `StatusBadGateway` to `StatusUnauthorized` base on handler config to problem details error.
  
@@ -94,7 +94,7 @@ problem.Map[custom_errors.BadRequestError](func() problem.ProblemDetailErr {
 })
  ```
 
-### Gin
+> ### Gin
 #### Error Handler:
 For handling our error we need to specify an `Error Handler` on top of `Gin` framework:
 ```go
@@ -116,7 +116,7 @@ func GinErrorHandler() gin.HandlerFunc {
 }
 ```
 
-#### Map Status Code:
+#### Map Status Code Error:
 
 In this sample we map status code `StatusBadGateway` to `StatusUnauthorized` base on handler config to problem details error.
  
@@ -153,7 +153,7 @@ problem.Map[custom_errors.BadRequestError](func() problem.ProblemDetailErr {
 })
  ```
 
-#### Custom Problem Details:
+> ### Custom Problem Details:
 
 We support custom problem details error for create more flexibility response error:
 ```go
