@@ -61,7 +61,7 @@ func EchoErrorHandler(error error, c echo.Context) {
 
 #### Map Status Code:
 
-In this sample we map status code 'StatusBadGateway' to 'StatusUnauthorized' base on handler config to problem details error.
+In this sample we map status code `StatusBadGateway` to `StatusUnauthorized` base on handler config to problem details error.
  
  ```go
 // handle specific status code to problem details error
@@ -69,6 +69,12 @@ func sample1(c echo.Context) error {
 	err := errors.New("We have a specific status code error in our endpoint")
 	return echo.NewHTTPError(http.StatusBadGateway, err)
 }
+ ```
+ ```go
+// problem details handler config
+problem.MapStatus(http.StatusBadGateway, func() problem.ProblemDetailErr {
+	return problem.New(http.StatusUnauthorized, "unauthorized", err.Error())
+})
  ```
 #### Map Custom Type Error:
 
@@ -81,6 +87,12 @@ func sample2(c echo.Context) error {
 	return custom_errors.BadRequestError{InternalError: err}
 }
 ```
+ ```go
+// problem details handler config
+problem.Map[custom_errors.BadRequestError](func() problem.ProblemDetailErr {
+	return problem.New(http.StatusBadRequest, "bad request", error.Error())
+})
+ ```
 
 ### Gin
 #### Error Handler:
@@ -106,7 +118,7 @@ func GinErrorHandler() gin.HandlerFunc {
 
 #### Map Status Code:
 
-In this sample we map status code 'StatusBadGateway' to 'StatusUnauthorized' base on handler config to problem details error.
+In this sample we map status code `StatusBadGateway` to `StatusUnauthorized` base on handler config to problem details error.
  
  ```go
 // handle specific status code to problem details error
@@ -115,6 +127,12 @@ func sample1(c *gin.Context) {
 	_ = c.AbortWithError(http.StatusBadGateway, err)
 }
  ```
+```go
+// problem details handler config
+problem.MapStatus(http.StatusBadGateway, func() problem.ProblemDetailErr {
+	return problem.New(http.StatusUnauthorized, "unauthorized", err.Error())
+})
+```
 #### Map Custom Type Error:
 
 In this sample we map custom error type to problem details error. 
@@ -128,6 +146,12 @@ func sample2(c *gin.Context) {
 	_ = c.Error(customBadRequestError)
 }
 ```
+ ```go
+// problem details handler config
+problem.Map[custom_errors.BadRequestError](func() problem.ProblemDetailErr {
+	return problem.New(http.StatusBadRequest, "bad request", error.Error())
+})
+ ```
 
 
 # Support
