@@ -7,10 +7,10 @@ import (
 	"github.com/labstack/echo/v4"
 	"github.com/pkg/errors"
 	"net/http"
+	"reflect"
 )
 
-// ProblemDetail error struct
-type ProblemDetail struct {
+type problemDetail struct {
 	Status     int    `json:"status,omitempty"`
 	Title      string `json:"title,omitempty"`
 	Detail     string `json:"detail,omitempty"`
@@ -19,26 +19,124 @@ type ProblemDetail struct {
 	StackTrace string `json:"stackTrace,omitempty"`
 }
 
-var mappers = map[int]func() *ProblemDetail{}
+var mappers = map[reflect.Type]func() ProblemDetailErr{}
+var mapperStatus = map[int]func() ProblemDetailErr{}
 
-// WriteTo writes the JSON Problem to an HTTP Response Writer
-func (p *ProblemDetail) writeTo(w http.ResponseWriter) (int, error) {
-	p.writeHeaderTo(w)
-	return w.Write(p.json())
+// ProblemDetailErr ProblemDetail error interface
+type ProblemDetailErr interface {
+	SetStatus(status int) ProblemDetailErr
+	GetStatus() int
+	SetTitle(title string) ProblemDetailErr
+	GetTitle() string
+	SetDetail(detail string) ProblemDetailErr
+	GetDetails() string
+	SetType(typ string) ProblemDetailErr
+	GetType() string
+	SetInstance(instance string) ProblemDetailErr
+	GetInstance() string
+	SetStackTrace(stackTrace string) ProblemDetailErr
+	GetStackTrace() string
 }
 
-// Map map error to problem details error
-func Map(statusCode int, funcProblem func() *ProblemDetail) {
-	mappers[statusCode] = funcProblem
+// New ProblemDetail Error
+func New(status int, title string, detail string) ProblemDetailErr {
+	problemDetail := &problemDetail{
+		Status: status,
+		Title:  title,
+		Detail: detail,
+		Type:   getDefaultType(status),
+	}
+
+	return problemDetail
+}
+
+func (p *problemDetail) SetDetail(detail string) ProblemDetailErr {
+	p.Detail = detail
+
+	return p
+}
+
+func (p *problemDetail) GetDetails() string {
+	return p.Detail
+}
+
+func (p *problemDetail) SetStatus(status int) ProblemDetailErr {
+	p.Status = status
+
+	return p
+}
+
+func (p *problemDetail) GetStatus() int {
+	return p.Status
+}
+
+func (p *problemDetail) SetTitle(title string) ProblemDetailErr {
+	p.Title = title
+
+	return p
+}
+
+func (p *problemDetail) GetTitle() string {
+	return p.Title
+}
+
+func (p *problemDetail) SetType(typ string) ProblemDetailErr {
+	p.Type = typ
+
+	return p
+}
+
+func (p *problemDetail) GetType() string {
+	return p.Type
+}
+
+func (p *problemDetail) SetInstance(instance string) ProblemDetailErr {
+	p.Instance = instance
+
+	return p
+}
+
+func (p *problemDetail) GetInstance() string {
+	return p.Instance
+}
+
+func (p *problemDetail) SetStackTrace(stackTrace string) ProblemDetailErr {
+	p.StackTrace = stackTrace
+
+	return p
+}
+
+func (p *problemDetail) GetStackTrace() string {
+	return p.StackTrace
+}
+
+func writeTo(w http.ResponseWriter, p ProblemDetailErr) (int, error) {
+
+	w.Header().Set("Content-Type", "application/problem+json")
+	w.WriteHeader(p.GetStatus())
+
+	val, err := json.Marshal(p)
+	if err != nil {
+		return 0, err
+	}
+	return w.Write(val)
+}
+
+// MapStatus map status code to problem details error
+func MapStatus(statusCode int, funcProblem func() ProblemDetailErr) {
+	mapperStatus[statusCode] = funcProblem
+}
+
+// Map map custom type error to problem details error
+func Map[T error](funcProblem func() ProblemDetailErr) {
+	mappers[reflect.TypeOf(*new(T))] = funcProblem
 }
 
 // ResolveProblemDetails retrieve and resolve error with format problem details error
 func ResolveProblemDetails(w http.ResponseWriter, r *http.Request, err error) error {
 
 	var statusCode int = http.StatusInternalServerError
-
 	var echoError *echo.HTTPError
-
 	var ginError *gin.Error
 
 	if errors.As(err, &echoError) {
@@ -49,27 +147,66 @@ func ResolveProblemDetails(w http.ResponseWriter, r *http.Request, err error) er
 		if rw.Written() {
 			statusCode = rw.Status()
 		}
-		err = err.(*gin.Error)
+		err = err.(*gin.Error).Err.(error)
 	}
 
-	problem := mappers[statusCode]
+	var mapCustomTypeErr, mapCustomType = setMapCustomType(w, r, err)
+	if mapCustomType {
+		return mapCustomTypeErr
+	}
 
-	if problem != nil {
-		problem := problem()
+	var mapStatusErr, mapStatus = setMapStatusCode(w, r, err, statusCode)
+	if mapStatus {
+		return mapStatusErr
+	}
 
-		validationProblems(problem, err, statusCode, r)
+	return setDefaultProblemDetails(w, r, err, statusCode)
+}
 
-		_, err = problem.writeTo(w)
+func setMapCustomType(w http.ResponseWriter, r *http.Request, err error) (error, bool) {
 
-		if err != nil {
-			return err
+	problemCustomType := mappers[reflect.TypeOf(err)]
+	if problemCustomType != nil {
+		prob := problemCustomType()
+
+		validationProblems(prob, err, r)
+
+		for k, v := range mapperStatus {
+			if k == prob.GetStatus() {
+				_, err = writeTo(w, v())
+				if err != nil {
+					return err, false
+				}
+				return err, true
+			}
 		}
 
-		return err
+		_, err = writeTo(w, prob)
+		if err != nil {
+			return err, false
+		}
+		return err, true
 	}
+	return err, false
+}
 
-	defaultProblem := func() *ProblemDetail {
-		return &ProblemDetail{
+func setMapStatusCode(w http.ResponseWriter, r *http.Request, err error, statusCode int) (error, bool) {
+	problemStatus := mapperStatus[statusCode]
+	if problemStatus != nil {
+		prob := problemStatus()
+		validationProblems(prob, err, r)
+		_, err = writeTo(w, prob)
+		if err != nil {
+			return err, false
+		}
+		return err, true
+	}
+	return err, false
+}
+
+func setDefaultProblemDetails(w http.ResponseWriter, r *http.Request, err error, statusCode int) error {
+	defaultProblem := func() ProblemDetailErr {
+		return &problemDetail{
 			Type:     getDefaultType(statusCode),
 			Status:   statusCode,
 			Detail:   err.Error(),
@@ -77,48 +214,30 @@ func ResolveProblemDetails(w http.ResponseWriter, r *http.Request, err error) er
 			Instance: r.URL.RequestURI(),
 		}
 	}
-
-	_, err = defaultProblem().writeTo(w)
-
+	_, err = writeTo(w, defaultProblem())
 	if err != nil {
 		return err
 	}
-
 	return err
 }
 
-func validationProblems(problem *ProblemDetail, err error, statusCode int, r *http.Request) {
-	problem.Detail = err.Error()
+func validationProblems(problem ProblemDetailErr, err error, r *http.Request) {
+	problem.SetDetail(err.Error())
 
-	if problem.Status == 0 {
-		problem.Status = statusCode
+	if problem.GetStatus() == 0 {
+		problem.SetStatus(http.StatusInternalServerError)
 	}
-	if problem.Instance == "" {
-		problem.Instance = r.URL.RequestURI()
+	if problem.GetInstance() == "" {
+		problem.SetInstance(r.URL.RequestURI())
 	}
-	if problem.Type == "" {
-		problem.Type = getDefaultType(problem.Status)
+	if problem.GetType() == "" {
+		problem.SetType(getDefaultType(problem.GetStatus()))
 	}
-	if problem.Title == "" {
-		problem.Title = http.StatusText(problem.Status)
+	if problem.GetTitle() == "" {
+		problem.SetTitle(http.StatusText(problem.GetStatus()))
 	}
-}
-
-func (p *ProblemDetail) writeHeaderTo(w http.ResponseWriter) {
-	w.Header().Set("Content-Type", "application/problem+json")
-
-	w.WriteHeader(p.Status)
-}
-
-func (p *ProblemDetail) json() []byte {
-	res, _ := json.Marshal(&p)
-	return res
 }
 
 func getDefaultType(statusCode int) string {
 	return fmt.Sprintf("https://httpstatuses.io/%d", statusCode)
-}
-
-func getUrl(w http.ResponseWriter, r *http.Request) {
-	fmt.Printf("Req: %s %s\n", r.Host, r.URL.Path)
 }
