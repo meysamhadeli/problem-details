@@ -155,7 +155,7 @@ problem.Map[custom_errors.BadRequestError](func() problem.ProblemDetailErr {
 
 #### Custom Problem Details:
 
-We support custom problem setails error for create more flexibility response error:
+We support custom problem details error for create more flexibility response error:
 ```go
 // custom problem details
 type CustomProblemDetail struct {
