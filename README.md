@@ -48,15 +48,7 @@ For handling our error we need to specify an `Error Handler` on top of `Echo` fr
 // EchoErrorHandler middleware for handle problem details error on echo
 func EchoErrorHandler(error error, c echo.Context) {
 
-	// handle problem details with customize problem map error
-	problem.Map(http.StatusInternalServerError, func() *problem.ProblemDetail {
-		return &problem.ProblemDetail{
-			Type:      "https://httpstatuses.io/400",
-			Detail:    error.Error(),
-			Status:    http.StatusBadRequest,
-			Title:     "bad-request",
-		}
-	})
+        // add custom map problem details here...
 
 	// resolve problem details error from response in echo
 	if !c.Response().Committed {
@@ -101,16 +93,8 @@ func GinErrorHandler() gin.HandlerFunc {
 
 		for _, err := range c.Errors {
 
-			// handle problem details with customize problem map error
-			problem.Map(http.StatusInternalServerError, func() *problem.ProblemDetail {
-				return &problem.ProblemDetail{
-					Type:      "https://httpstatuses.io/400",
-					Detail:    err.Error(),
-					Status:    http.StatusBadRequest,
-					Title:     "bad-request",
-				}
-			})
-
+                        // add custom map problem details here...
+			
 			if err := problem.ResolveProblemDetails(c.Writer, c.Request, err); err != nil {
 				log.Error(err)
 			}
