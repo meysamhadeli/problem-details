@@ -7,6 +7,7 @@ import (
 	"github.com/labstack/echo/v4"
 	"github.com/pkg/errors"
 	"net/http"
+	"net/http/httptest"
 	"reflect"
 )
 
@@ -143,9 +144,13 @@ func ResolveProblemDetails(w http.ResponseWriter, r *http.Request, err error) er
 		statusCode = err.(*echo.HTTPError).Code
 		err = err.(*echo.HTTPError).Message.(error)
 	} else if errors.As(err, &ginError) {
-		var rw = w.(gin.ResponseWriter)
-		if rw.Written() {
+		var rw, ok = w.(gin.ResponseWriter)
+		if ok && rw.Written() {
 			statusCode = rw.Status()
+		}
+		if gin.Mode() == gin.TestMode {
+			var rw = w.(*httptest.ResponseRecorder)
+			statusCode = rw.Code
 		}
 		err = err.(*gin.Error).Err.(error)
 	}
