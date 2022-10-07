@@ -2,6 +2,7 @@
   <img src="assets/logo.png" alt="problem-details" />
   <div align="center">
     <a href="https://github.com/meysamhadeli/problem-details/actions/workflows/ci.yml"><img alt="build-status" src="https://github.com/meysamhadeli/problem-details/actions/workflows/ci.yml/badge.svg?branch=main&style=flat-square"/></a>
+	  <a href="https://goreportcard.com/report/github.com/meysamhadeli/problem-details" ><img alt="go report" src="https://goreportcard.com/badge/github.com/meysamhadeli/problem-details"/></a>
     <a><img alt="license" src="https://img.shields.io/badge/go%20version-%3E=1.18-61CFDD.svg?style=flat-square"/></a>
     <a href="https://github.com/meysamhadeli/problem-details/blob/main/LICENSE"><img alt="build-status" src="https://img.shields.io/github/license/meysamhadeli/problem-details?color=%234275f5&style=flat-square"/></a>
         <a href="https://coveralls.io/github/meysamhadeli/problem-details?branch=main"><img alt="Coverage Status" src="https://img.shields.io/coveralls/github/meysamhadeli/problem-details?color=%23f542cb&style=flat-square"/></a>
