@@ -72,7 +72,7 @@ func GinErrorHandler() gin.HandlerFunc {
 				return problem.New(http.StatusUnauthorized, "unauthorized", err.Error())
 			})
 
-			if err := problem.ResolveProblemDetails(c.Writer, c.Request, err); err != nil {
+			if _, err := problem.ResolveProblemDetails(c.Writer, c.Request, err); err != nil {
 				log.Error(err)
 			}
 		}

@@ -54,7 +54,7 @@ func EchoErrorHandler(error error, c echo.Context) {
 
 	// resolve problem details error from response in echo
 	if !c.Response().Committed {
-		if err := problem.ResolveProblemDetails(c.Response(), c.Request(), error); err != nil {
+		if _, err := problem.ResolveProblemDetails(c.Response(), c.Request(), error); err != nil {
 			log.Error(err)
 		}
 	}
@@ -110,7 +110,7 @@ func GinErrorHandler() gin.HandlerFunc {
 
                         // add custom map problem details here...
 			
-			if err := problem.ResolveProblemDetails(c.Writer, c.Request, err); err != nil {
+			if _, err := problem.ResolveProblemDetails(c.Writer, c.Request, err); err != nil {
 				log.Error(err)
 			}
 		}

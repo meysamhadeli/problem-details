@@ -134,7 +134,7 @@ func Map[T error](funcProblem func() ProblemDetailErr) {
 }
 
 // ResolveProblemDetails retrieve and resolve error with format problem details error
-func ResolveProblemDetails(w http.ResponseWriter, r *http.Request, err error) error {
+func ResolveProblemDetails(w http.ResponseWriter, r *http.Request, err error) (ProblemDetailErr, error) {
 
 	var statusCode int = http.StatusInternalServerError
 	var echoError *echo.HTTPError
@@ -150,25 +150,31 @@ func ResolveProblemDetails(w http.ResponseWriter, r *http.Request, err error) er
 		}
 		if gin.Mode() == gin.TestMode {
 			var rw = w.(*httptest.ResponseRecorder)
-			statusCode = rw.Code
+			if rw.Code != http.StatusOK {
+				statusCode = rw.Code
+			}
 		}
 		err = err.(*gin.Error).Err.(error)
 	}
 
-	var mapCustomTypeErr, mapCustomType = setMapCustomType(w, r, err)
-	if mapCustomType {
-		return mapCustomTypeErr
+	var mapCustomType, mapCustomTypeErr = setMapCustomType(w, r, err)
+	if mapCustomType != nil {
+		return mapCustomType, mapCustomTypeErr
 	}
 
-	var mapStatusErr, mapStatus = setMapStatusCode(w, r, err, statusCode)
-	if mapStatus {
-		return mapStatusErr
+	var mapStatus, mapStatusErr = setMapStatusCode(w, r, err, statusCode)
+	if mapStatus != nil {
+		return mapStatus, mapStatusErr
 	}
 
-	return setDefaultProblemDetails(w, r, err, statusCode)
+	var p, errr = setDefaultProblemDetails(w, r, err, statusCode)
+	if errr != nil {
+		return nil, err
+	}
+	return p, errr
 }
 
-func setMapCustomType(w http.ResponseWriter, r *http.Request, err error) (error, bool) {
+func setMapCustomType(w http.ResponseWriter, r *http.Request, err error) (ProblemDetailErr, error) {
 
 	problemCustomType := mappers[reflect.TypeOf(err)]
 	if problemCustomType != nil {
@@ -180,36 +186,36 @@ func setMapCustomType(w http.ResponseWriter, r *http.Request, err error) (error,
 			if k == prob.GetStatus() {
 				_, err = writeTo(w, v())
 				if err != nil {
-					return err, false
+					return nil, err
 				}
-				return err, true
+				return prob, err
 			}
 		}
 
 		_, err = writeTo(w, prob)
 		if err != nil {
-			return err, false
+			return nil, err
 		}
-		return err, true
+		return prob, err
 	}
-	return err, false
+	return nil, err
 }
 
-func setMapStatusCode(w http.ResponseWriter, r *http.Request, err error, statusCode int) (error, bool) {
+func setMapStatusCode(w http.ResponseWriter, r *http.Request, err error, statusCode int) (ProblemDetailErr, error) {
 	problemStatus := mapperStatus[statusCode]
 	if problemStatus != nil {
 		prob := problemStatus()
 		validationProblems(prob, err, r)
 		_, err = writeTo(w, prob)
 		if err != nil {
-			return err, false
+			return nil, err
 		}
-		return err, true
+		return prob, err
 	}
-	return err, false
+	return nil, err
 }
 
-func setDefaultProblemDetails(w http.ResponseWriter, r *http.Request, err error, statusCode int) error {
+func setDefaultProblemDetails(w http.ResponseWriter, r *http.Request, err error, statusCode int) (ProblemDetailErr, error) {
 	defaultProblem := func() ProblemDetailErr {
 		return &problemDetail{
 			Type:     getDefaultType(statusCode),
@@ -219,11 +225,12 @@ func setDefaultProblemDetails(w http.ResponseWriter, r *http.Request, err error,
 			Instance: r.URL.RequestURI(),
 		}
 	}
-	_, err = writeTo(w, defaultProblem())
+	prob := defaultProblem()
+	_, err = writeTo(w, prob)
 	if err != nil {
-		return err
+		return nil, err
 	}
-	return err
+	return prob, err
 }
 
 func validationProblems(problem ProblemDetailErr, err error, r *http.Request) {
