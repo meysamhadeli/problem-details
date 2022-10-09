@@ -16,7 +16,7 @@
 
 Our problem details response body and headers will be look like this:
 ```go
-// Response body
+    // Response body
 
 {
     "status": 400,                                        // The HTTP status code generated on the problem occurrence
@@ -28,7 +28,7 @@ Our problem details response body and headers will be look like this:
 }
 ```
 ```go
-// Response headers
+    // Response headers
 
      content-type: application/problem+json
      date: Thu,29 Sep 2022 14:07:23 GMT 
