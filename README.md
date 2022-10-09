@@ -16,22 +16,22 @@
 
 Our problem details response body and headers will be look like this:
 ```go
-// Response body
+    // Response body
 
 {
-"status": 400,                                        // The HTTP status code generated on the problem occurrence
-"title": "bad-request",                               // A short human-readable problem summary
-"detail": "We have a bad request in our endpoint",    // A human-readable explanation for what exactly happened
-"type": "https://httpstatuses.io/400",                // URI reference to identify the problem type
-"instance": "/sample1",                               // URI reference of the occurrence
-"stackTrace": "some more trace for error",            // More trace information error for what exactly happened
+    "status": 400,                                        // The HTTP status code generated on the problem occurrence
+    "title": "bad-request",                               // A short human-readable problem summary
+    "detail": "We have a bad request in our endpoint",    // A human-readable explanation for what exactly happened
+    "type": "https://httpstatuses.io/400",                // URI reference to identify the problem type
+    "instance": "/sample1",                               // URI reference of the occurrence
+    "stackTrace": "some more trace for error",            // More trace information error for what exactly happened
 }
 ```
 ```go
-// Response headers
+    // Response headers
 
- content-type: application/problem+json
- date: Thu,29 Sep 2022 14:07:23 GMT 
+     content-type: application/problem+json
+     date: Thu,29 Sep 2022 14:07:23 GMT 
 ```
 There are some samples for using this package on top of Echo [here](./sample/cmd/echo/main.go) and for Gin [here](./sample/cmd/gin/main.go).
 
@@ -69,18 +69,18 @@ In this sample we map status code `StatusBadGateway` to `StatusUnauthorized` bas
  ```go
 // handle specific status code to problem details error
 func sample1(c echo.Context) error {
-	err := errors.New("We have a specific status code error in our endpoint")
-	return echo.NewHTTPError(http.StatusBadGateway, err)
+        err := errors.New("We have a specific status code error in our endpoint")
+	    return echo.NewHTTPError(http.StatusBadGateway, err)
 }
  ```
  ```go
 // problem details handler config
 problem.MapStatus(http.StatusBadGateway, func() problem.ProblemDetailErr {
-return &problem.ProblemDetail{
-Status: http.StatusUnauthorized,
-Title:  "unauthorized",
-Detail: error.Error(),
-}
+        return &problem.ProblemDetail{
+            Status: http.StatusUnauthorized,
+            Title:  "unauthorized",
+            Detail: error.Error(),
+        }
 })
  ```
 #### Map Custom Type Error:
@@ -90,18 +90,18 @@ In this sample we map custom error type to problem details error.
 ```go
 // handle custom type error to problem details error
 func sample2(c echo.Context) error {
-	err := errors.New("We have a custom type error in our endpoint")
+        err := errors.New("We have a custom type error in our endpoint")
 	return custom_errors.BadRequestError{InternalError: err}
 }
 ```
  ```go
 // problem details handler config
 problem.Map[custom_errors.BadRequestError](func() problem.ProblemDetailErr {
-return &problem.ProblemDetail{
-Status: http.StatusBadRequest,
-Title:  "bad request",
-Detail: error.Error(),
-}
+        return &problem.ProblemDetail{
+            Status: http.StatusBadRequest,
+            Title:  "bad request",
+            Detail: error.Error(),
+        }
 })
  ```
 
@@ -134,18 +134,18 @@ In this sample we map status code `StatusBadGateway` to `StatusUnauthorized` bas
  ```go
 // handle specific status code to problem details error
 func sample1(c *gin.Context) {
-	err := errors.New("We have a specific status code error in our endpoint")
-	_ = c.AbortWithError(http.StatusBadGateway, err)
+        err := errors.New("We have a specific status code error in our endpoint")
+	    _ = c.AbortWithError(http.StatusBadGateway, err)
 }
  ```
 ```go
 // problem details handler config
 problem.MapStatus(http.StatusBadGateway, func() problem.ProblemDetailErr {
-return &problem.ProblemDetail{
-Status: http.StatusUnauthorized,
-Title:  "unauthorized",
-Detail: err.Error(),
-}
+        return &problem.ProblemDetail{
+            Status: http.StatusUnauthorized,
+            Title:  "unauthorized",
+            Detail: err.Error(),
+        }
 })
 ```
 #### Map Custom Type Error:
@@ -155,8 +155,7 @@ In this sample we map custom error type to problem details error.
 ```go
 // handle custom type error to problem details error
 func sample2(c *gin.Context) {
-
-	err := errors.New("We have a custom type error in our endpoint")
+        err := errors.New("We have a custom type error in our endpoint")
 	customBadRequestError := custom_errors.BadRequestError{InternalError: err}
 	_ = c.Error(customBadRequestError)
 }
@@ -164,11 +163,11 @@ func sample2(c *gin.Context) {
  ```go
 // problem details handler config
 problem.Map[custom_errors.BadRequestError](func() problem.ProblemDetailErr {
-return &problem.ProblemDetail{
-Status: http.StatusBadRequest,
-Title:  "bad request",
-Detail: err.Error(),
-}
+        return &problem.ProblemDetail{
+            Status: http.StatusBadRequest,
+            Title:  "bad request",
+            Detail: err.Error(),
+        }
 })
  ```
 
@@ -178,23 +177,23 @@ We support custom problem details error for create more flexibility response err
 ```go
 // custom problem details
 type CustomProblemDetail struct {
-	problem.ProblemDetailErr
-	Description    string `json:"description,omitempty"`
-	AdditionalInfo string `json:"additionalInfo,omitempty"`
+            problem.ProblemDetailErr
+	    Description    string `json:"description,omitempty"`
+	    AdditionalInfo string `json:"additionalInfo,omitempty"`
 }
 ```
  ```go
 // problem details handler config
 problem.Map[custom_errors.ConflictError](func() problem.ProblemDetailErr {
-return &custom_problems.CustomProblemDetail{
-ProblemDetailErr: &problem.ProblemDetail{
-Status: http.StatusConflict,
-Title:  "conflict",
-Detail: error.Error(),
-},
-AdditionalInfo: "some additional info...",
-Description:    "some description...",
-}
+        return &custom_problems.CustomProblemDetail{
+            ProblemDetailErr: &problem.ProblemDetail{
+                Status: http.StatusConflict,
+                Title:  "conflict",
+                Detail: error.Error(),
+            },
+            AdditionalInfo: "some additional info...",
+            Description:    "some description...",
+        }
 })
  ```
 
