@@ -90,7 +90,7 @@ In this sample we map custom error type to problem details error.
 ```go
 // handle custom type error to problem details error
 func sample2(c echo.Context) error {
-	err := errors.New("We have a custom type error in our endpoint")
+        err := errors.New("We have a custom type error in our endpoint")
 	return custom_errors.BadRequestError{InternalError: err}
 }
 ```
@@ -134,7 +134,7 @@ In this sample we map status code `StatusBadGateway` to `StatusUnauthorized` bas
  ```go
 // handle specific status code to problem details error
 func sample1(c *gin.Context) {
-	err := errors.New("We have a specific status code error in our endpoint")
+        err := errors.New("We have a specific status code error in our endpoint")
 	_ = c.AbortWithError(http.StatusBadGateway, err)
 }
  ```
@@ -155,8 +155,7 @@ In this sample we map custom error type to problem details error.
 ```go
 // handle custom type error to problem details error
 func sample2(c *gin.Context) {
-
-	err := errors.New("We have a custom type error in our endpoint")
+        err := errors.New("We have a custom type error in our endpoint")
 	customBadRequestError := custom_errors.BadRequestError{InternalError: err}
 	_ = c.Error(customBadRequestError)
 }
@@ -178,9 +177,9 @@ We support custom problem details error for create more flexibility response err
 ```go
 // custom problem details
 type CustomProblemDetail struct {
-	problem.ProblemDetailErr
-	Description    string `json:"description,omitempty"`
-	AdditionalInfo string `json:"additionalInfo,omitempty"`
+            problem.ProblemDetailErr
+	    Description    string `json:"description,omitempty"`
+	    AdditionalInfo string `json:"additionalInfo,omitempty"`
 }
 ```
  ```go
