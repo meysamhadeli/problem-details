@@ -19,19 +19,19 @@ Our problem details response body and headers will be look like this:
 // Response body
 
 {
-"status": 400,                                        // The HTTP status code generated on the problem occurrence
-"title": "bad-request",                               // A short human-readable problem summary
-"detail": "We have a bad request in our endpoint",    // A human-readable explanation for what exactly happened
-"type": "https://httpstatuses.io/400",                // URI reference to identify the problem type
-"instance": "/sample1",                               // URI reference of the occurrence
-"stackTrace": "some more trace for error",            // More trace information error for what exactly happened
+    "status": 400,                                        // The HTTP status code generated on the problem occurrence
+    "title": "bad-request",                               // A short human-readable problem summary
+    "detail": "We have a bad request in our endpoint",    // A human-readable explanation for what exactly happened
+    "type": "https://httpstatuses.io/400",                // URI reference to identify the problem type
+    "instance": "/sample1",                               // URI reference of the occurrence
+    "stackTrace": "some more trace for error",            // More trace information error for what exactly happened
 }
 ```
 ```go
 // Response headers
 
- content-type: application/problem+json
- date: Thu,29 Sep 2022 14:07:23 GMT 
+     content-type: application/problem+json
+     date: Thu,29 Sep 2022 14:07:23 GMT 
 ```
 There are some samples for using this package on top of Echo [here](./sample/cmd/echo/main.go) and for Gin [here](./sample/cmd/gin/main.go).
 
