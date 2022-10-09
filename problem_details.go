@@ -206,11 +206,12 @@ func setMapStatusCode(w http.ResponseWriter, r *http.Request, err error, statusC
 func setDefaultProblemDetails(w http.ResponseWriter, r *http.Request, err error, statusCode int) (ProblemDetailErr, error) {
 	defaultProblem := func() ProblemDetailErr {
 		return &ProblemDetail{
-			Type:     getDefaultType(statusCode),
-			Status:   statusCode,
-			Detail:   err.Error(),
-			Title:    http.StatusText(statusCode),
-			Instance: r.URL.RequestURI(),
+			Type:       getDefaultType(statusCode),
+			Status:     statusCode,
+			Detail:     err.Error(),
+			Title:      http.StatusText(statusCode),
+			Instance:   r.URL.RequestURI(),
+			StackTrace: errorsWithStack(err),
 		}
 	}
 	prob := defaultProblem()
