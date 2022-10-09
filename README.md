@@ -187,9 +187,9 @@ type CustomProblemDetail struct {
 problem.Map[custom_errors.ConflictError](func() problem.ProblemDetailErr {
         return &custom_problems.CustomProblemDetail{
             ProblemDetailErr: &problem.ProblemDetail{
-              Status: http.StatusConflict,
-              Title:  "conflict",
-              Detail: error.Error(),
+                Status: http.StatusConflict,
+                Title:  "conflict",
+                Detail: error.Error(),
             },
             AdditionalInfo: "some additional info...",
             Description:    "some description...",
