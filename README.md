@@ -70,7 +70,7 @@ In this sample we map status code `StatusBadGateway` to `StatusUnauthorized` bas
 // handle specific status code to problem details error
 func sample1(c echo.Context) error {
         err := errors.New("We have a specific status code error in our endpoint")
-	return echo.NewHTTPError(http.StatusBadGateway, err)
+	    return echo.NewHTTPError(http.StatusBadGateway, err)
 }
  ```
  ```go
@@ -135,7 +135,7 @@ In this sample we map status code `StatusBadGateway` to `StatusUnauthorized` bas
 // handle specific status code to problem details error
 func sample1(c *gin.Context) {
         err := errors.New("We have a specific status code error in our endpoint")
-	_ = c.AbortWithError(http.StatusBadGateway, err)
+	    _ = c.AbortWithError(http.StatusBadGateway, err)
 }
  ```
 ```go
