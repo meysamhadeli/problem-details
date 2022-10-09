@@ -11,15 +11,6 @@ import (
 	"testing"
 )
 
-func Test_BadRequest_Err(t *testing.T) {
-	badRequestErr := New(http.StatusBadRequest, "bad-request", "We have a bad request error")
-
-	assert.Equal(t, "We have a bad request error", badRequestErr.GetDetails())
-	assert.Equal(t, "bad-request", badRequestErr.GetTitle())
-	assert.Equal(t, "https://httpstatuses.io/400", badRequestErr.GetType())
-	assert.Equal(t, http.StatusBadRequest, badRequestErr.GetStatus())
-}
-
 func TestMap_CustomType_Echo(t *testing.T) {
 
 	e := echo.New()
@@ -30,7 +21,11 @@ func TestMap_CustomType_Echo(t *testing.T) {
 	err := echo_endpoint1(c)
 
 	Map[custom_errors.BadRequestError](func() ProblemDetailErr {
-		return New(http.StatusBadRequest, "bad-request", err.Error())
+		return &ProblemDetail{
+			Status: http.StatusBadRequest,
+			Title:  "bad-request",
+			Detail: err.Error(),
+		}
 	})
 
 	p, _ := ResolveProblemDetails(c.Response(), c.Request(), err)
@@ -53,9 +48,13 @@ func TestMap_Custom_Problem_Err_Echo(t *testing.T) {
 
 	Map[custom_errors.ConflictError](func() ProblemDetailErr {
 		return &CustomProblemDetailTest{
-			ProblemDetailErr: New(http.StatusConflict, "conflict", err.Error()),
-			AdditionalInfo:   "some additional info...",
-			Description:      "some description...",
+			ProblemDetailErr: &ProblemDetail{
+				Status: http.StatusConflict,
+				Title:  "conflict",
+				Detail: err.Error(),
+			},
+			AdditionalInfo: "some additional info...",
+			Description:    "some description...",
 		}
 	})
 
@@ -81,7 +80,11 @@ func TestMap_Status_Echo(t *testing.T) {
 	err := echo_endpoint2(c)
 
 	MapStatus(http.StatusBadGateway, func() ProblemDetailErr {
-		return New(http.StatusUnauthorized, "unauthorized", err.Error())
+		return &ProblemDetail{
+			Status: http.StatusUnauthorized,
+			Title:  "unauthorized",
+			Detail: err.Error(),
+		}
 	})
 
 	p, _ := ResolveProblemDetails(c.Response(), c.Request(), err)
@@ -130,7 +133,11 @@ func TestMap_CustomType_Gin(t *testing.T) {
 	for _, err := range c.Errors {
 
 		Map[custom_errors.BadRequestError](func() ProblemDetailErr {
-			return New(http.StatusBadRequest, "bad-request", err.Error())
+			return &ProblemDetail{
+				Status: http.StatusBadRequest,
+				Title:  "bad-request",
+				Detail: err.Error(),
+			}
 		})
 
 		p, _ := ResolveProblemDetails(w, req, err)
@@ -162,9 +169,13 @@ func TestMap_Custom_Problem_Err_Gin(t *testing.T) {
 
 		Map[custom_errors.ConflictError](func() ProblemDetailErr {
 			return &CustomProblemDetailTest{
-				ProblemDetailErr: New(http.StatusConflict, "conflict", err.Error()),
-				AdditionalInfo:   "some additional info...",
-				Description:      "some description...",
+				ProblemDetailErr: &ProblemDetail{
+					Status: http.StatusConflict,
+					Title:  "conflict",
+					Detail: err.Error(),
+				},
+				AdditionalInfo: "some additional info...",
+				Description:    "some description...",
 			}
 		})
 
@@ -198,7 +209,11 @@ func TestMap_Status_Gin(t *testing.T) {
 	for _, err := range c.Errors {
 
 		MapStatus(http.StatusBadGateway, func() ProblemDetailErr {
-			return New(http.StatusUnauthorized, "unauthorized", err.Error())
+			return &ProblemDetail{
+				Status: http.StatusUnauthorized,
+				Title:  "unauthorized",
+				Detail: err.Error(),
+			}
 		})
 
 		p, _ := ResolveProblemDetails(w, req, err)

@@ -55,21 +55,33 @@ func GinErrorHandler() gin.HandlerFunc {
 
 			// map custom type error to problem details error
 			problem.Map[custom_errors.BadRequestError](func() problem.ProblemDetailErr {
-				return problem.New(http.StatusBadRequest, "bad request", err.Error())
+				return &problem.ProblemDetail{
+					Status: http.StatusBadRequest,
+					Title:  "bad request",
+					Detail: err.Error(),
+				}
 			})
 
 			// map custom type error to custom problem details error
 			problem.Map[custom_errors.ConflictError](func() problem.ProblemDetailErr {
 				return &custom_problems.CustomProblemDetail{
-					ProblemDetailErr: problem.New(http.StatusConflict, "conflict", err.Error()),
-					AdditionalInfo:   "some additional info...",
-					Description:      "some description...",
+					ProblemDetailErr: &problem.ProblemDetail{
+						Status: http.StatusConflict,
+						Title:  "conflict",
+						Detail: err.Error(),
+					},
+					AdditionalInfo: "some additional info...",
+					Description:    "some description...",
 				}
 			})
 
 			// map status code to problem details error
 			problem.MapStatus(http.StatusBadGateway, func() problem.ProblemDetailErr {
-				return problem.New(http.StatusUnauthorized, "unauthorized", err.Error())
+				return &problem.ProblemDetail{
+					Status: http.StatusUnauthorized,
+					Title:  "unauthorized",
+					Detail: err.Error(),
+				}
 			})
 
 			if _, err := problem.ResolveProblemDetails(c.Writer, c.Request, err); err != nil {

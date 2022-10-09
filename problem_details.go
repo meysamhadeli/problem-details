@@ -11,7 +11,7 @@ import (
 	"reflect"
 )
 
-type problemDetail struct {
+type ProblemDetail struct {
 	Status     int    `json:"status,omitempty"`
 	Title      string `json:"title,omitempty"`
 	Detail     string `json:"detail,omitempty"`
@@ -39,75 +39,63 @@ type ProblemDetailErr interface {
 	GetStackTrace() string
 }
 
-// New ProblemDetail Error
-func New(status int, title string, detail string) ProblemDetailErr {
-	problemDetail := &problemDetail{
-		Status: status,
-		Title:  title,
-		Detail: detail,
-		Type:   getDefaultType(status),
-	}
-
-	return problemDetail
-}
-
-func (p *problemDetail) SetDetail(detail string) ProblemDetailErr {
+func (p *ProblemDetail) SetDetail(detail string) ProblemDetailErr {
 	p.Detail = detail
 
 	return p
 }
 
-func (p *problemDetail) GetDetails() string {
+func (p *ProblemDetail) GetDetails() string {
 	return p.Detail
 }
 
-func (p *problemDetail) SetStatus(status int) ProblemDetailErr {
+func (p *ProblemDetail) SetStatus(status int) ProblemDetailErr {
 	p.Status = status
 
 	return p
 }
 
-func (p *problemDetail) GetStatus() int {
+func (p *ProblemDetail) GetStatus() int {
 	return p.Status
 }
 
-func (p *problemDetail) SetTitle(title string) ProblemDetailErr {
+func (p *ProblemDetail) SetTitle(title string) ProblemDetailErr {
 	p.Title = title
 
 	return p
 }
 
-func (p *problemDetail) GetTitle() string {
+func (p *ProblemDetail) GetTitle() string {
 	return p.Title
 }
 
-func (p *problemDetail) SetType(typ string) ProblemDetailErr {
+func (p *ProblemDetail) SetType(typ string) ProblemDetailErr {
 	p.Type = typ
 
 	return p
 }
 
-func (p *problemDetail) GetType() string {
+func (p *ProblemDetail) GetType() string {
 	return p.Type
 }
 
-func (p *problemDetail) SetInstance(instance string) ProblemDetailErr {
+func (p *ProblemDetail) SetInstance(instance string) ProblemDetailErr {
 	p.Instance = instance
 
 	return p
 }
 
-func (p *problemDetail) GetInstance() string {
+func (p *ProblemDetail) GetInstance() string {
 	return p.Instance
 }
 
-func (p *problemDetail) SetStackTrace(stackTrace string) ProblemDetailErr {
+func (p *ProblemDetail) SetStackTrace(stackTrace string) ProblemDetailErr {
 	p.StackTrace = stackTrace
 
 	return p
 }
 
-func (p *problemDetail) GetStackTrace() string {
+func (p *ProblemDetail) GetStackTrace() string {
 	return p.StackTrace
 }
 
@@ -217,7 +205,7 @@ func setMapStatusCode(w http.ResponseWriter, r *http.Request, err error, statusC
 
 func setDefaultProblemDetails(w http.ResponseWriter, r *http.Request, err error, statusCode int) (ProblemDetailErr, error) {
 	defaultProblem := func() ProblemDetailErr {
-		return &problemDetail{
+		return &ProblemDetail{
 			Type:     getDefaultType(statusCode),
 			Status:   statusCode,
 			Detail:   err.Error(),
@@ -248,8 +236,16 @@ func validationProblems(problem ProblemDetailErr, err error, r *http.Request) {
 	if problem.GetTitle() == "" {
 		problem.SetTitle(http.StatusText(problem.GetStatus()))
 	}
+	if problem.GetStackTrace() == "" {
+		problem.SetStackTrace(errorsWithStack(err))
+	}
 }
 
 func getDefaultType(statusCode int) string {
 	return fmt.Sprintf("https://httpstatuses.io/%d", statusCode)
+}
+
+func errorsWithStack(err error) string {
+	res := fmt.Sprintf("%+v", err)
+	return res
 }

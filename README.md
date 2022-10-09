@@ -23,7 +23,8 @@ Our problem details response body and headers will be look like this:
 "title": "bad-request",                               // A short human-readable problem summary
 "detail": "We have a bad request in our endpoint",    // A human-readable explanation for what exactly happened
 "type": "https://httpstatuses.io/400",                // URI reference to identify the problem type
-"instance": "/sample1"                                // URI reference of the occurrence
+"instance": "/sample1",                               // URI reference of the occurrence
+"stackTrace": "some more trace for error",            // More trace information error for what exactly happened
 }
 ```
 ```go
@@ -75,7 +76,11 @@ func sample1(c echo.Context) error {
  ```go
 // problem details handler config
 problem.MapStatus(http.StatusBadGateway, func() problem.ProblemDetailErr {
-	return problem.New(http.StatusUnauthorized, "unauthorized", err.Error())
+return &problem.ProblemDetail{
+Status: http.StatusUnauthorized,
+Title:  "unauthorized",
+Detail: error.Error(),
+}
 })
  ```
 #### Map Custom Type Error:
@@ -92,7 +97,11 @@ func sample2(c echo.Context) error {
  ```go
 // problem details handler config
 problem.Map[custom_errors.BadRequestError](func() problem.ProblemDetailErr {
-	return problem.New(http.StatusBadRequest, "bad request", error.Error())
+return &problem.ProblemDetail{
+Status: http.StatusBadRequest,
+Title:  "bad request",
+Detail: error.Error(),
+}
 })
  ```
 
@@ -132,7 +141,11 @@ func sample1(c *gin.Context) {
 ```go
 // problem details handler config
 problem.MapStatus(http.StatusBadGateway, func() problem.ProblemDetailErr {
-	return problem.New(http.StatusUnauthorized, "unauthorized", err.Error())
+return &problem.ProblemDetail{
+Status: http.StatusUnauthorized,
+Title:  "unauthorized",
+Detail: err.Error(),
+}
 })
 ```
 #### Map Custom Type Error:
@@ -151,7 +164,11 @@ func sample2(c *gin.Context) {
  ```go
 // problem details handler config
 problem.Map[custom_errors.BadRequestError](func() problem.ProblemDetailErr {
-	return problem.New(http.StatusBadRequest, "bad request", error.Error())
+return &problem.ProblemDetail{
+Status: http.StatusBadRequest,
+Title:  "bad request",
+Detail: err.Error(),
+}
 })
  ```
 
@@ -169,11 +186,15 @@ type CustomProblemDetail struct {
  ```go
 // problem details handler config
 problem.Map[custom_errors.ConflictError](func() problem.ProblemDetailErr {
-	return &custom_problems.CustomProblemDetail{
-		ProblemDetailErr: problem.New(http.StatusConflict, "conflict", error.Error()),
-		AdditionalInfo:   "some additional info...",
-		Description:      "some description...",
-	}
+return &custom_problems.CustomProblemDetail{
+ProblemDetailErr: &problem.ProblemDetail{
+Status: http.StatusConflict,
+Title:  "conflict",
+Detail: error.Error(),
+},
+AdditionalInfo: "some additional info...",
+Description:    "some description...",
+}
 })
  ```
 
