@@ -4,6 +4,7 @@ import (
 	"encoding/json"
 	"fmt"
 	"github.com/gin-gonic/gin"
+	"github.com/gofiber/fiber/v3"
 	"github.com/labstack/echo/v4"
 	"github.com/pkg/errors"
 	"net/http"
@@ -127,8 +128,12 @@ func ResolveProblemDetails(w http.ResponseWriter, r *http.Request, err error) (P
 	var statusCode int = http.StatusInternalServerError
 	var echoError *echo.HTTPError
 	var ginError *gin.Error
+	var fiberError *fiber.Error
 
-	if errors.As(err, &echoError) {
+	if errors.As(err, &fiberError) {
+		statusCode = fiberError.Code
+		err = errors.New(fiberError.Message)
+	} else if errors.As(err, &echoError) {
 		statusCode = err.(*echo.HTTPError).Code
 		err = err.(*echo.HTTPError).Message.(error)
 	} else if errors.As(err, &ginError) {

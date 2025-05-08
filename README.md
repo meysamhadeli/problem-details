@@ -104,6 +104,98 @@ problem.Map[custom_errors.BadRequestError](func() problem.ProblemDetailErr {
 })
  ```
 
+> ### Fiber
+#### Error Handler:
+For handling our error we need to specify an `Error Handler` on top of `Fiber` framework:
+```go
+// FiberErrorHandler middleware for handle problem details error on fiber
+func FiberErrorHandler(c fiber.Ctx) error {
+    err := c.Next()
+
+    if err != nil {
+        
+          // add custom map problem details here...
+        
+        // resolve problem details error from response in fiber
+        if _, err := problem.ResolveProblemDetails(fiber_helper.Response(c), fiber_helper.Request(c), err); err != nil {
+            log.Error(err)
+        }
+    }
+    
+    return nil
+}
+```
+
+#### Map Status Code Error:
+
+In this sample we map status code `StatusBadGateway` to `StatusUnauthorized` base on handler config to problem details error.
+ 
+ ```go
+// handle specific status code to problem details error
+func sample1(c fiber.Ctx) error {
+   err := errors.New("We have a specific status code error in our endpoint")
+   return fiber.NewError(http.StatusBadGateway, err.Error())
+}
+ ```
+```go
+// problem details handler config
+problem.MapStatus(http.StatusBadGateway, func() problem.ProblemDetailErr {
+   return &problem.ProblemDetail{
+       Status: http.StatusUnauthorized,
+       Title:  "unauthorized",
+       Detail: error.Error(),
+   }
+})
+```
+#### Map Custom Type Error:
+
+In this sample we map custom error type to problem details error. 
+
+```go
+// handle custom type error to problem details error
+func sample2(c fiber.Ctx) error {
+    err := errors.New("We have a custom type error in our endpoint")
+    return custom_errors.BadRequestError{InternalError: err}
+}
+```
+ ```go
+// problem details handler config
+problem.Map[custom_errors.BadRequestError](func() problem.ProblemDetailErr {
+   return &problem.ProblemDetail{
+       Status: http.StatusBadRequest,
+       Title:  "bad request",
+       Detail: error.Error(),
+   }
+})
+ ```
+
+> ### Custom Problem Details:
+
+We support custom problem details error for create more flexibility response error:
+```go
+// custom problem details
+type CustomProblemDetail struct {
+    problem.ProblemDetailErr
+    Description    string `json:"description,omitempty"`
+    AdditionalInfo string `json:"additionalInfo,omitempty"`
+}
+```
+ ```go
+// problem details handler config
+problem.Map[custom_errors.ConflictError](func() problem.ProblemDetailErr {
+   return &custom_problems.CustomProblemDetail{
+       ProblemDetailErr: &problem.ProblemDetail{
+           Status: http.StatusConflict,
+           Title:  "conflict",
+           Detail: error.Error(),
+       },
+       AdditionalInfo: "some additional info...",
+       Description:    "some description...",
+   }
+})
+ ```
+
+
 > ### Gin
 #### Error Handler:
 For handling our error we need to specify an `Error Handler` on top of `Gin` framework:
