@@ -3,9 +3,12 @@ package problem
 import (
 	"errors"
 	"github.com/gin-gonic/gin"
+	"github.com/gofiber/fiber/v3"
 	"github.com/labstack/echo/v4"
+	fiber_helper "github.com/meysamhadeli/problem-details/fiber-helper"
 	custom_errors "github.com/meysamhadeli/problem-details/samples/custom-errors"
 	"github.com/stretchr/testify/assert"
+	"github.com/valyala/fasthttp"
 	"net/http"
 	"net/http/httptest"
 	"testing"
@@ -251,6 +254,140 @@ func TestMap_Unhandled_Err_Gin(t *testing.T) {
 	}
 }
 
+func TestMap_CustomType_Fiber(t *testing.T) {
+	app := fiber.New()
+
+	app.Get("/fiber_endpoint1", func(c fiber.Ctx) error {
+		return fiber_endpoint1(c)
+	})
+
+	// Create fasthttp request context
+	fctx := &fasthttp.RequestCtx{}
+	fctx.Request.SetRequestURI("/fiber_endpoint1")
+	fctx.Request.Header.SetMethod(http.MethodGet)
+
+	// Create Fiber context
+	ctx := app.AcquireCtx(fctx)
+	defer app.ReleaseCtx(ctx)
+
+	// Execute the handler
+	handlerErr := fiber_endpoint1(ctx)
+
+	Map[custom_errors.BadRequestError](func() ProblemDetailErr {
+		return &ProblemDetail{
+			Status: http.StatusBadRequest,
+			Title:  "bad-request",
+			Detail: handlerErr.Error(),
+		}
+	})
+
+	p, _ := ResolveProblemDetails(fiber_helper.Response(ctx), fiber_helper.Request(ctx), handlerErr)
+
+	assert.Equal(t, http.StatusBadRequest, ctx.Response().StatusCode())
+	assert.Equal(t, handlerErr.Error(), p.GetDetails())
+	assert.Equal(t, "bad-request", p.GetTitle())
+	assert.Equal(t, "https://httpstatuses.io/400", p.GetType())
+	assert.Equal(t, http.StatusBadRequest, p.GetStatus())
+}
+
+func TestMap_Custom_Problem_Err_Fiber(t *testing.T) {
+	app := fiber.New()
+
+	app.Get("/fiber_endpoint4", func(c fiber.Ctx) error {
+		return fiber_endpoint4(c)
+	})
+
+	fctx := &fasthttp.RequestCtx{}
+	fctx.Request.SetRequestURI("/fiber_endpoint4")
+	fctx.Request.Header.SetMethod(http.MethodGet)
+
+	ctx := app.AcquireCtx(fctx)
+	defer app.ReleaseCtx(ctx)
+
+	handlerErr := fiber_endpoint4(ctx)
+
+	Map[custom_errors.ConflictError](func() ProblemDetailErr {
+		return &CustomProblemDetailTest{
+			ProblemDetailErr: &ProblemDetail{
+				Status: http.StatusConflict,
+				Title:  "conflict",
+				Detail: handlerErr.Error(),
+			},
+			AdditionalInfo: "some additional info...",
+			Description:    "some description...",
+		}
+	})
+
+	p, _ := ResolveProblemDetails(fiber_helper.Response(ctx), fiber_helper.Request(ctx), handlerErr)
+	cp := p.(*CustomProblemDetailTest)
+
+	assert.Equal(t, http.StatusConflict, ctx.Response().StatusCode())
+	assert.Equal(t, handlerErr.Error(), cp.GetDetails())
+	assert.Equal(t, "conflict", cp.GetTitle())
+	assert.Equal(t, "https://httpstatuses.io/409", cp.GetType())
+	assert.Equal(t, http.StatusConflict, cp.GetStatus())
+	assert.Equal(t, "some description...", cp.Description)
+	assert.Equal(t, "some additional info...", cp.AdditionalInfo)
+}
+
+func TestMap_Status_Fiber(t *testing.T) {
+	app := fiber.New()
+
+	app.Get("/fiber_endpoint2", func(c fiber.Ctx) error {
+		return fiber_endpoint2(c)
+	})
+
+	fctx := &fasthttp.RequestCtx{}
+	fctx.Request.SetRequestURI("/fiber_endpoint2")
+	fctx.Request.Header.SetMethod(http.MethodGet)
+
+	ctx := app.AcquireCtx(fctx)
+	defer app.ReleaseCtx(ctx)
+
+	handlerErr := fiber_endpoint2(ctx)
+
+	MapStatus(http.StatusBadGateway, func() ProblemDetailErr {
+		return &ProblemDetail{
+			Status: http.StatusUnauthorized,
+			Title:  "unauthorized",
+			Detail: handlerErr.Error(),
+		}
+	})
+
+	p, _ := ResolveProblemDetails(fiber_helper.Response(ctx), fiber_helper.Request(ctx), handlerErr)
+
+	assert.Equal(t, http.StatusUnauthorized, ctx.Response().StatusCode())
+	assert.Equal(t, handlerErr.Error(), p.GetDetails())
+	assert.Equal(t, "unauthorized", p.GetTitle())
+	assert.Equal(t, "https://httpstatuses.io/401", p.GetType())
+	assert.Equal(t, http.StatusUnauthorized, p.GetStatus())
+}
+
+func TestMap_Unhandled_Err_Fiber(t *testing.T) {
+	app := fiber.New()
+
+	app.Get("/fiber_endpoint3", func(c fiber.Ctx) error {
+		return fiber_endpoint3(c)
+	})
+
+	fctx := &fasthttp.RequestCtx{}
+	fctx.Request.SetRequestURI("/fiber_endpoint3")
+	fctx.Request.Header.SetMethod(http.MethodGet)
+
+	ctx := app.AcquireCtx(fctx)
+	defer app.ReleaseCtx(ctx)
+
+	handlerErr := fiber_endpoint3(ctx)
+
+	p, _ := ResolveProblemDetails(fiber_helper.Response(ctx), fiber_helper.Request(ctx), handlerErr)
+
+	assert.Equal(t, http.StatusInternalServerError, ctx.Response().StatusCode())
+	assert.Equal(t, handlerErr.Error(), p.GetDetails())
+	assert.Equal(t, "Internal Server Error", p.GetTitle())
+	assert.Equal(t, "https://httpstatuses.io/500", p.GetType())
+	assert.Equal(t, http.StatusInternalServerError, p.GetStatus())
+}
+
 func echo_endpoint1(c echo.Context) error {
 	err := errors.New("We have a custom type error in our endpoint")
 	return custom_errors.BadRequestError{InternalError: err}
@@ -267,6 +404,26 @@ func echo_endpoint3(c echo.Context) error {
 }
 
 func echo_endpoint4(c echo.Context) error {
+	err := errors.New("We have a custom error with custom problem details error in our endpoint")
+	return custom_errors.ConflictError{InternalError: err}
+}
+
+func fiber_endpoint1(c fiber.Ctx) error {
+	err := errors.New("We have a custom type error in our endpoint")
+	return custom_errors.BadRequestError{InternalError: err}
+}
+
+func fiber_endpoint2(c fiber.Ctx) error {
+	err := errors.New("We have a specific status code error in our endpoint")
+	return fiber.NewError(http.StatusBadGateway, err.Error())
+}
+
+func fiber_endpoint3(c fiber.Ctx) error {
+	err := errors.New("We have an unhandled error in our endpoint")
+	return err
+}
+
+func fiber_endpoint4(c fiber.Ctx) error {
 	err := errors.New("We have a custom error with custom problem details error in our endpoint")
 	return custom_errors.ConflictError{InternalError: err}
 }
