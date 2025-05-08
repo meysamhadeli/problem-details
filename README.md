@@ -169,7 +169,7 @@ problem.Map[custom_errors.BadRequestError](func() problem.ProblemDetailErr {
 })
  ```
 
-> #### Custom Problem Details:
+#### Custom Problem Details:
 
 We support custom problem details error for create more flexibility response error:
 ```go
@@ -262,7 +262,7 @@ problem.Map[custom_errors.BadRequestError](func() problem.ProblemDetailErr {
 })
  ```
 
-> #### Custom Problem Details:
+#### Custom Problem Details:
 
 We support custom problem details error for create more flexibility response error:
 ```go
