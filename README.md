@@ -32,7 +32,7 @@ Our problem details response body and headers will be look like this:
      content-type: application/problem+json
      date: Thu,29 Sep 2022 14:07:23 GMT 
 ```
-There are some samples for using this package on top of Echo [here](./sample/cmd/echo/main.go) and for Gin [here](./sample/cmd/gin/main.go).
+There are some samples for using this package on top of Echo [here](./sample/cmd/echo/main.go), Fiber [here](./sample/cmd/fiber/main.go) and for Gin [here](./sample/cmd/gin/main.go).
 
 ## Installation
 
