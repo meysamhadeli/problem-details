@@ -117,7 +117,7 @@ func FiberErrorHandler(c fiber.Ctx) error {
           // add custom map problem details here...
         
         // resolve problem details error from response in fiber
-        if _, err := problem.ResolveProblemDetails(fiber_helper.Response(c), fiber_helper.Request(c), err); err != nil {
+        if _, err := problem.ResolveProblemDetails(problem.Response(c), problem.Request(c), err); err != nil {
             log.Error(err)
         }
     }
