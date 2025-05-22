@@ -9,7 +9,6 @@ import (
 	"github.com/pkg/errors"
 	"net/http"
 	"net/http/httptest"
-	"net/url"
 	"reflect"
 )
 
@@ -20,12 +19,6 @@ type ProblemDetail struct {
 	Type       string `json:"type,omitempty"`
 	Instance   string `json:"instance,omitempty"`
 	StackTrace string `json:"stackTrace,omitempty"`
-}
-
-type fiberResponseWriter struct {
-	ctx     fiber.Ctx
-	written bool
-	headers http.Header
 }
 
 var mappers = map[reflect.Type]func() ProblemDetailErr{}
@@ -261,37 +254,4 @@ func getDefaultType(statusCode int) string {
 func errorsWithStack(err error) string {
 	res := fmt.Sprintf("%+v", err)
 	return res
-}
-
-func Response(c fiber.Ctx) *fiberResponseWriter {
-	return &fiberResponseWriter{
-		ctx:     c,
-		headers: make(http.Header),
-	}
-}
-
-func (f *fiberResponseWriter) Header() http.Header {
-	return f.headers
-}
-
-func (f *fiberResponseWriter) Write(data []byte) (int, error) {
-	f.written = true
-	return f.ctx.Response().BodyWriter().Write(data)
-}
-
-func (f *fiberResponseWriter) WriteHeader(statusCode int) {
-	f.written = true
-	f.ctx.Status(statusCode)
-}
-
-func Request(c fiber.Ctx) *http.Request {
-	fiberURI := c.Request().URI()
-	parsedURL, _ := url.Parse(string(fiberURI.FullURI()))
-
-	return &http.Request{
-		Method:     c.Method(),
-		URL:        parsedURL,
-		Header:     make(http.Header),
-		RequestURI: string(c.Request().RequestURI()),
-	}
 }

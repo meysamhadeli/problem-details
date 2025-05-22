@@ -5,6 +5,7 @@ import (
 	"github.com/gin-gonic/gin"
 	"github.com/gofiber/fiber/v3"
 	"github.com/labstack/echo/v4"
+	fiber_helper "github.com/meysamhadeli/problem-details/fiber-helper"
 	custom_errors "github.com/meysamhadeli/problem-details/samples/custom-errors"
 	"github.com/stretchr/testify/assert"
 	"github.com/valyala/fasthttp"
@@ -280,7 +281,7 @@ func TestMap_CustomType_Fiber(t *testing.T) {
 		}
 	})
 
-	p, _ := ResolveProblemDetails(Response(ctx), Request(ctx), handlerErr)
+	p, _ := ResolveProblemDetails(fiber_helper.Response(ctx), fiber_helper.Request(ctx), handlerErr)
 
 	assert.Equal(t, http.StatusBadRequest, ctx.Response().StatusCode())
 	assert.Equal(t, handlerErr.Error(), p.GetDetails())
@@ -317,7 +318,7 @@ func TestMap_Custom_Problem_Err_Fiber(t *testing.T) {
 		}
 	})
 
-	p, _ := ResolveProblemDetails(Response(ctx), Request(ctx), handlerErr)
+	p, _ := ResolveProblemDetails(fiber_helper.Response(ctx), fiber_helper.Request(ctx), handlerErr)
 	cp := p.(*CustomProblemDetailTest)
 
 	assert.Equal(t, http.StatusConflict, ctx.Response().StatusCode())
@@ -353,7 +354,7 @@ func TestMap_Status_Fiber(t *testing.T) {
 		}
 	})
 
-	p, _ := ResolveProblemDetails(Response(ctx), Request(ctx), handlerErr)
+	p, _ := ResolveProblemDetails(fiber_helper.Response(ctx), fiber_helper.Request(ctx), handlerErr)
 
 	assert.Equal(t, http.StatusUnauthorized, ctx.Response().StatusCode())
 	assert.Equal(t, handlerErr.Error(), p.GetDetails())
@@ -378,7 +379,7 @@ func TestMap_Unhandled_Err_Fiber(t *testing.T) {
 
 	handlerErr := fiber_endpoint3(ctx)
 
-	p, _ := ResolveProblemDetails(Response(ctx), Request(ctx), handlerErr)
+	p, _ := ResolveProblemDetails(fiber_helper.Response(ctx), fiber_helper.Request(ctx), handlerErr)
 
 	assert.Equal(t, http.StatusInternalServerError, ctx.Response().StatusCode())
 	assert.Equal(t, handlerErr.Error(), p.GetDetails())
