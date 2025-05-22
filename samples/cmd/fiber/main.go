@@ -4,7 +4,6 @@ import (
 	"github.com/gofiber/fiber/v3"
 	"github.com/labstack/gommon/log"
 	"github.com/meysamhadeli/problem-details"
-	fiber_helper "github.com/meysamhadeli/problem-details/fiber-helper"
 	"github.com/meysamhadeli/problem-details/samples/custom-errors"
 	custom_problems "github.com/meysamhadeli/problem-details/samples/custom-problems"
 	"github.com/pkg/errors"
@@ -80,7 +79,7 @@ func FiberErrorHandler(c fiber.Ctx) error {
 		})
 
 		// resolve problem details error
-		if _, err := problem.ResolveProblemDetails(fiber_helper.Response(c), fiber_helper.Request(c), err); err != nil {
+		if _, err := problem.ResolveProblemDetails(problem.Response(c), problem.Request(c), err); err != nil {
 			log.Error(err)
 		}
 	}
