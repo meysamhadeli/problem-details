@@ -131,7 +131,6 @@ func Map[T error](funcProblem func() ProblemDetailErr) {
 
 // ResolveProblemDetails retrieve and resolve error with format problem details error
 func ResolveProblemDetails(w http.ResponseWriter, r *http.Request, err error) (ProblemDetailErr, error) {
-
 	var statusCode int = http.StatusInternalServerError
 	var echoError *echo.HTTPError
 	var ginError *gin.Error
@@ -142,7 +141,11 @@ func ResolveProblemDetails(w http.ResponseWriter, r *http.Request, err error) (P
 		err = errors.New(fiberError.Message)
 	} else if errors.As(err, &echoError) {
 		statusCode = err.(*echo.HTTPError).Code
-		err = err.(*echo.HTTPError).Message.(error)
+		if errors.As(err.(*echo.HTTPError).Message, &err) {
+			err = err.(*echo.HTTPError).Message.(error)
+		} else {
+			err = errors.New(err.(*echo.HTTPError).Message.(string))
+		}
 	} else if errors.As(err, &ginError) {
 		var rw, ok = w.(gin.ResponseWriter)
 		if ok && rw.Written() {
