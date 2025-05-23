@@ -141,10 +141,10 @@ func ResolveProblemDetails(w http.ResponseWriter, r *http.Request, err error) (P
 		err = errors.New(fiberError.Message)
 	} else if errors.As(err, &echoError) {
 		statusCode = err.(*echo.HTTPError).Code
-		if errors.As(err.(*echo.HTTPError).Message, &err) {
-			err = err.(*echo.HTTPError).Message.(error)
-		} else {
-			err = errors.New(err.(*echo.HTTPError).Message.(string))
+		if messageErr, ok := err.(*echo.HTTPError).Message.(error); ok {
+			err = messageErr
+		} else if messageStr, ok := err.(*echo.HTTPError).Message.(string); ok {
+			err = errors.New(messageStr)
 		}
 	} else if errors.As(err, &ginError) {
 		var rw, ok = w.(gin.ResponseWriter)
