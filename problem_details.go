@@ -141,15 +141,15 @@ func ResolveProblemDetails(w http.ResponseWriter, r *http.Request, err error) (P
 		statusCode = fiberError.Code
 		err = errors.New(fiberError.Message)
 	} else if errors.As(err, &echoError) {
-		statusCode = err.(*echo.HTTPError).Code
-		if messageErr, ok := err.(*echo.HTTPError).Message.(error); ok {
+		statusCode = echoError.Code
+		if messageErr, ok := echoError.Message.(error); ok {
 			err = messageErr
-		} else if messageStr, ok := err.(*echo.HTTPError).Message.(string); ok {
+		} else if messageStr, ok := echoError.Message.(string); ok {
 			err = errors.New(messageStr)
 		}
-		if err.(*echo.HTTPError).Internal != nil {
+		if echoError.Internal != nil {
 			userFacingErrMsg = err.Error()
-			err = err.(*echo.HTTPError).Internal
+			err = echoError.Internal
 		}
 	} else if errors.As(err, &ginError) {
 		var rw, ok = w.(gin.ResponseWriter)
