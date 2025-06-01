@@ -92,7 +92,33 @@ func TestMap_Status_Echo(t *testing.T) {
 	p, _ := ResolveProblemDetails(c.Response(), c.Request(), err)
 
 	assert.Equal(t, c.Response().Status, http.StatusUnauthorized)
-	assert.Equal(t, err.(*echo.HTTPError).Message.(error).Error(), p.GetDetails())
+	assert.Equal(t, "We have a specific status code error in our endpoint", p.GetDetails())
+	assert.Equal(t, "unauthorized", p.GetTitle())
+	assert.Equal(t, "https://httpstatuses.io/401", p.GetType())
+	assert.Equal(t, http.StatusUnauthorized, p.GetStatus())
+}
+
+func TestMap_Status2_Echo(t *testing.T) {
+
+	e := echo.New()
+	req := httptest.NewRequest(http.MethodGet, "http://echo_endpoint2", nil)
+	rec := httptest.NewRecorder()
+	c := e.NewContext(req, rec)
+
+	err := echo_endpoint2b(c)
+
+	MapStatus(http.StatusBadGateway, func() ProblemDetailErr {
+		return &ProblemDetail{
+			Status: http.StatusUnauthorized,
+			Title:  "unauthorized",
+			Detail: err.Error(),
+		}
+	})
+
+	p, _ := ResolveProblemDetails(c.Response(), c.Request(), err)
+
+	assert.Equal(t, c.Response().Status, http.StatusUnauthorized)
+	assert.Equal(t, "We have a specific status code error in our endpoint", p.GetDetails())
 	assert.Equal(t, "unauthorized", p.GetTitle())
 	assert.Equal(t, "https://httpstatuses.io/401", p.GetType())
 	assert.Equal(t, http.StatusUnauthorized, p.GetStatus())
@@ -395,6 +421,10 @@ func echo_endpoint1(c echo.Context) error {
 func echo_endpoint2(c echo.Context) error {
 	err := errors.New("We have a specific status code error in our endpoint")
 	return echo.NewHTTPError(http.StatusBadGateway, err)
+}
+
+func echo_endpoint2b(c echo.Context) error {
+	return echo.NewHTTPError(http.StatusBadGateway, "We have a specific status code error in our endpoint")
 }
 
 func echo_endpoint3(c echo.Context) error {
