@@ -124,6 +124,33 @@ func TestMap_Status2_Echo(t *testing.T) {
 	assert.Equal(t, http.StatusUnauthorized, p.GetStatus())
 }
 
+func TestMap_Status_Details_Echo(t *testing.T) {
+
+	e := echo.New()
+	req := httptest.NewRequest(http.MethodGet, "http://echo_endpoint2", nil)
+	rec := httptest.NewRecorder()
+	c := e.NewContext(req, rec)
+
+	err := echo.HTTPError{Code: http.StatusNotFound, Message: "Entity not found. Please contact admin.", Internal: errors.New("Error with additional analysis/audit logging information")}
+
+	MapStatus(http.StatusBadGateway, func() ProblemDetailErr {
+		return &ProblemDetail{
+			Status: http.StatusUnauthorized,
+			Title:  "unauthorized",
+			Detail: err.Error(),
+		}
+	})
+
+	p, _ := ResolveProblemDetails(c.Response(), c.Request(), &err)
+
+	assert.Equal(t, http.StatusNotFound, c.Response().Status)
+	assert.Equal(t, "Entity not found. Please contact admin.", p.GetDetails())
+	assert.Contains(t, p.GetStackTrace(), "Error with additional analysis/audit logging information")
+	assert.Equal(t, "Not Found", p.GetTitle())
+	assert.Equal(t, "https://httpstatuses.io/404", p.GetType())
+	assert.Equal(t, http.StatusNotFound, p.GetStatus())
+}
+
 func TestMap_Unhandled_Err_Echo(t *testing.T) {
 
 	e := echo.New()
