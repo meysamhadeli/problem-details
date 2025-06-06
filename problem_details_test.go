@@ -32,7 +32,8 @@ func TestMap_CustomType_Echo(t *testing.T) {
 
 	p, _ := ResolveProblemDetails(c.Response(), c.Request(), err)
 
-	assert.Equal(t, c.Response().Status, http.StatusBadRequest)
+	assert.Equal(t, http.StatusBadRequest, c.Response().Status)
+
 	assert.Equal(t, err.Error(), p.GetDetails())
 	assert.Equal(t, "bad-request", p.GetTitle())
 	assert.Equal(t, "https://httpstatuses.io/400", p.GetType())
@@ -63,7 +64,8 @@ func TestMap_Custom_Problem_Err_Echo(t *testing.T) {
 	p, _ := ResolveProblemDetails(c.Response(), c.Request(), err)
 	cp := p.(*CustomProblemDetailTest)
 
-	assert.Equal(t, c.Response().Status, http.StatusConflict)
+	assert.Equal(t, http.StatusConflict, c.Response().Status)
+
 	assert.Equal(t, err.Error(), cp.GetDetails())
 	assert.Equal(t, "conflict", cp.GetTitle())
 	assert.Equal(t, "https://httpstatuses.io/409", cp.GetType())
@@ -91,7 +93,8 @@ func TestMap_Status_Echo(t *testing.T) {
 
 	p, _ := ResolveProblemDetails(c.Response(), c.Request(), err)
 
-	assert.Equal(t, c.Response().Status, http.StatusUnauthorized)
+	assert.Equal(t, http.StatusUnauthorized, c.Response().Status)
+
 	assert.Equal(t, "We have a specific status code error in our endpoint", p.GetDetails())
 	assert.Equal(t, "unauthorized", p.GetTitle())
 	assert.Equal(t, "https://httpstatuses.io/401", p.GetType())
@@ -124,6 +127,33 @@ func TestMap_Status2_Echo(t *testing.T) {
 	assert.Equal(t, http.StatusUnauthorized, p.GetStatus())
 }
 
+func TestMap_Status_Details_Echo(t *testing.T) {
+
+	e := echo.New()
+	req := httptest.NewRequest(http.MethodGet, "http://echo_endpoint2", nil)
+	rec := httptest.NewRecorder()
+	c := e.NewContext(req, rec)
+
+	err := echo.HTTPError{Code: http.StatusNotFound, Message: "Entity not found. Please contact admin.", Internal: errors.New("Error with additional analysis/audit logging information")}
+
+	MapStatus(http.StatusBadGateway, func() ProblemDetailErr {
+		return &ProblemDetail{
+			Status: http.StatusUnauthorized,
+			Title:  "unauthorized",
+			Detail: err.Error(),
+		}
+	})
+
+	p, _ := ResolveProblemDetails(c.Response(), c.Request(), &err)
+
+	assert.Equal(t, http.StatusNotFound, c.Response().Status)
+	assert.Equal(t, "Entity not found. Please contact admin.", p.GetDetails())
+	assert.Contains(t, p.GetStackTrace(), "Error with additional analysis/audit logging information")
+	assert.Equal(t, "Not Found", p.GetTitle())
+	assert.Equal(t, "https://httpstatuses.io/404", p.GetType())
+	assert.Equal(t, http.StatusNotFound, p.GetStatus())
+}
+
 func TestMap_Unhandled_Err_Echo(t *testing.T) {
 
 	e := echo.New()
@@ -135,7 +165,8 @@ func TestMap_Unhandled_Err_Echo(t *testing.T) {
 
 	p, _ := ResolveProblemDetails(c.Response(), c.Request(), err)
 
-	assert.Equal(t, c.Response().Status, http.StatusInternalServerError)
+	assert.Equal(t, http.StatusInternalServerError, c.Response().Status)
+
 	assert.Equal(t, err.Error(), p.GetDetails())
 	assert.Equal(t, "Internal Server Error", p.GetTitle())
 	assert.Equal(t, "https://httpstatuses.io/500", p.GetType())
