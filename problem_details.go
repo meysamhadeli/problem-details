@@ -131,6 +131,7 @@ func Map[T error](funcProblem func() ProblemDetailErr) {
 
 // ResolveProblemDetails retrieve and resolve error with format problem details error
 func ResolveProblemDetails(w http.ResponseWriter, r *http.Request, err error) (ProblemDetailErr, error) {
+	var userFacingErrMsg string = ""
 	var statusCode int = http.StatusInternalServerError
 	var echoError *echo.HTTPError
 	var ginError *gin.Error
@@ -140,11 +141,15 @@ func ResolveProblemDetails(w http.ResponseWriter, r *http.Request, err error) (P
 		statusCode = fiberError.Code
 		err = errors.New(fiberError.Message)
 	} else if errors.As(err, &echoError) {
-		statusCode = err.(*echo.HTTPError).Code
-		if messageErr, ok := err.(*echo.HTTPError).Message.(error); ok {
+		statusCode = echoError.Code
+		if messageErr, ok := echoError.Message.(error); ok {
 			err = messageErr
-		} else if messageStr, ok := err.(*echo.HTTPError).Message.(string); ok {
+		} else if messageStr, ok := echoError.Message.(string); ok {
 			err = errors.New(messageStr)
+		}
+		if echoError.Internal != nil {
+			userFacingErrMsg = err.Error()
+			err = echoError.Internal
 		}
 	} else if errors.As(err, &ginError) {
 		var rw, ok = w.(gin.ResponseWriter)
@@ -170,7 +175,7 @@ func ResolveProblemDetails(w http.ResponseWriter, r *http.Request, err error) (P
 		return mapStatus, mapStatusErr
 	}
 
-	var p, errr = setDefaultProblemDetails(w, r, err, statusCode)
+	var p, errr = setDefaultProblemDetails(w, r, err, userFacingErrMsg, statusCode)
 	if errr != nil {
 		return nil, err
 	}
@@ -218,12 +223,15 @@ func setMapStatusCode(w http.ResponseWriter, r *http.Request, err error, statusC
 	return nil, err
 }
 
-func setDefaultProblemDetails(w http.ResponseWriter, r *http.Request, err error, statusCode int) (ProblemDetailErr, error) {
+func setDefaultProblemDetails(w http.ResponseWriter, r *http.Request, err error, userFacingErrMsg string, statusCode int) (ProblemDetailErr, error) {
 	defaultProblem := func() ProblemDetailErr {
+		if userFacingErrMsg == "" {
+			userFacingErrMsg = err.Error()
+		}
 		return &ProblemDetail{
 			Type:       getDefaultType(statusCode),
 			Status:     statusCode,
-			Detail:     err.Error(),
+			Detail:     userFacingErrMsg,
 			Title:      http.StatusText(statusCode),
 			Instance:   r.URL.RequestURI(),
 			StackTrace: errorsWithStack(err),
