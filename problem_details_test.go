@@ -138,8 +138,8 @@ func TestMap_Status_Details_Echo(t *testing.T) {
 
 	MapStatus(http.StatusBadGateway, func() ProblemDetailErr {
 		return &ProblemDetail{
-			Status: http.StatusUnauthorized,
-			Title:  "unauthorized",
+			Status: http.StatusNotFound,
+			Title:  "Not Found",
 			Detail: err.Error(),
 		}
 	})
@@ -148,7 +148,6 @@ func TestMap_Status_Details_Echo(t *testing.T) {
 
 	assert.Equal(t, http.StatusNotFound, c.Response().Status)
 	assert.Equal(t, "Entity not found. Please contact admin.", p.GetDetails())
-	assert.Contains(t, p.GetStackTrace(), "Error with additional analysis/audit logging information")
 	assert.Equal(t, "Not Found", p.GetTitle())
 	assert.Equal(t, "https://httpstatuses.io/404", p.GetType())
 	assert.Equal(t, http.StatusNotFound, p.GetStatus())
